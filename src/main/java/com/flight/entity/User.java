@@ -58,4 +58,7 @@ public abstract class User {
 	
 	public abstract String getType();
 	
+	public int getPassengerId() {
+		return this.passenger_id;
+	}
 }
