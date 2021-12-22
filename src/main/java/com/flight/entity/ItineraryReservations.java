@@ -41,4 +41,8 @@ public class ItineraryReservations {
 	private int date_reservation_made;//sql date object
 	
 	private int number_in_party;
+
+	public int getPassengerId() {
+		return this.passenger_id.getPassengerId();
+	}
 }

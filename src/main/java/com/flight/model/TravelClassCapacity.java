@@ -1,13 +1,11 @@
 package com.flight.model;
 
 import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+
+import com.flight.entity.FlightCosts;
 
 @Table(name="Travel_Class_Capacity")
 public class TravelClassCapacity {
@@ -16,10 +14,31 @@ public class TravelClassCapacity {
 	@JoinColumn(name="aircraft_type_code")
 	private FlightCosts aircraft_type_code;
 	
-	
-	/*@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int travel_class_code;*///i think referenced by airlinecode
+	private int travel_class_code;
 	
 	@Column(nullable=false)
 	private int seat_capcity;
+	
+	public TravelClassCapacity() {
+		this.travel_class_code = 2;
+		setSeat_capacity(this.travel_class_code);
+	}
+	
+	public TravelClassCapacity(int travel_class_code) {
+		this.travel_class_code = travel_class_code;
+		setSeat_capacity(this.travel_class_code);
+	}
+	
+	private void setSeat_capacity(int travel_class_code) {
+		if(travel_class_code == 1) {
+			seat_capcity = 10;
+		}
+		else {
+			seat_capcity = 30;
+		}
+	}
+	
+	public void reserveSeat() {
+		this.seat_capcity -= 1;
+	}
 }
