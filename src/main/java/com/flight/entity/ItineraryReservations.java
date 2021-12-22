@@ -9,11 +9,13 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import com.flight.model.ItineraryLegs;
+import com.flight.model.ReservationPayments;
 import com.flight.model.TravelClassCapacity;
 
 @Entity
 @Table(name="Itinerary_Reservations")
-public class ItineraryReservations {
+public class ItineraryReservations extends ItineraryLegs {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,10 +29,11 @@ public class ItineraryReservations {
 	@JoinColumn(name="passenger_id")
 	private User passenger_id;
 	
-	/*@OneToOne(mappedBy="reservation_id")
-	private int reservation_status_code;
+	@OneToOne
+	@JoinColumn(name="payment_id")
+	private Payments reservation_status_code;
 	
-	@OneToOne(mappedBy="reservation_id")
+	/*@OneToOne(mappedBy="reservation_id")
 	private int ticket_type_code;
 	
 	@OneToOne
@@ -44,5 +47,9 @@ public class ItineraryReservations {
 
 	public int getPassengerId() {
 		return this.passenger_id.getPassengerId();
+	}
+	
+	public int getReservationId(){
+		return this.reservation_id;
 	}
 }

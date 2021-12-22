@@ -17,4 +17,9 @@ public class ReservationPayments {
 	@OneToOne
 	@JoinColumn(name="payment_id")
 	private Payments payment_id;
+
+	public ItineraryReservations getReservation_id() {
+		return reservation_id;
+	}
+
 }

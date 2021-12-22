@@ -1,9 +1,9 @@
 package com.flight.controller;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Optional;
-
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.flight.entity.FlightSchedules;
 import com.flight.entity.ItineraryReservations;
-import com.flight.entity.User;
+import com.flight.entity.Legs;
 import com.flight.repository.FlightSchedulesRepository;
 import com.flight.repository.ItineraryReservationsRepository;
-import com.flight.repository.UserRepository;
 
 @RestController
 @RequestMapping("flight_schedules")
@@ -49,7 +48,7 @@ public class FlightSchedulesController {
 		flightSchedulesRepository.delete(flightSchedulesRepository.getById(flight_number));
 	}
 	
-	public ResponseEntity<List<ItineraryReservations>> viewReservations(int passenger_id) {
+	public List<ItineraryReservations> viewReservations(int passenger_id) {
 		try {
 			List<ItineraryReservations> itineraryReservations = itineraryReservationsRepository.findAll();
 			List<ItineraryReservations> listOfFlightSchedules = new ArrayList<>();
@@ -61,21 +60,34 @@ public class FlightSchedulesController {
 			}
 			
 			if(!listOfFlightSchedules.isEmpty()) {
-				return new ResponseEntity<>(listOfFlightSchedules, HttpStatus.OK);
+				return listOfFlightSchedules;
 			}
-			
-			return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+			else {
+				throw new Exception("Itinerary reservations are empty. You have no reservations!");
+			}
 		}
 		catch(Exception ex) {
-			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+			System.out.println("Error: " + ex.getMessage());
+			return null;
 		}
 	}
 	
-	@GetMapping("/view/{passenger_id}")//*********************************NOT FINISHED
-	public ResponseEntity<List<ItineraryReservations>> viewFlightSchedules(int passenger_id) {
+	@GetMapping("/view/{passenger_id}")
+	public ResponseEntity<Map<Integer, List<Legs>>> viewLegs(int passenger_id) {
 		try {
-			List<ItineraryReservations> listOfFlightSchedules = viewReservations(passenger_id).getBody();
-			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+			List<ItineraryReservations> listOfItineraryReservations = viewReservations(passenger_id);
+			
+			if(!listOfItineraryReservations.isEmpty()) {
+				Map<Integer, List<Legs>> legsMap = new LinkedHashMap<>();
+				
+				for(int i= 0; i < listOfItineraryReservations.size(); i++) {
+					legsMap.put(i, listOfItineraryReservations.get(i).getLeg_id());
+				}
+				
+				return new ResponseEntity<>(legsMap, HttpStatus.OK);
+			}
+			
+			return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
 		}
 		catch(Exception ex) {
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
