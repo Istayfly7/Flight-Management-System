@@ -19,8 +19,9 @@ public class Payments extends ReservationPayments{
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int payment_id;
 	
-	//@OneToOne(mappedBy="payment_id")
-	//private int payment_status_code;
+	@OneToOne
+	@JoinColumn(name="reservation_id")
+	private ItineraryReservations payment_status_code;
 	
 	@Column(nullable=false)
 	private int payment_date; //sql date object
