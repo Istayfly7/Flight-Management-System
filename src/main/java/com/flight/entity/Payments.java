@@ -9,9 +9,11 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import com.flight.model.ReservationPayments;
+
 @Entity
 @Table(name="Payments")
-public class Payments {
+public class Payments extends ReservationPayments{
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,4 +27,8 @@ public class Payments {
 	
 	@Column(nullable=false)
 	private int payment_amount; //short, int, or long
+	
+	public int getPaymentId() {
+		return this.payment_id;
+	}
 }
