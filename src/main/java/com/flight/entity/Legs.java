@@ -49,5 +49,9 @@ public class Legs {
 		this.actual_arrival_time = actual_arrival_time;
 	}
 	
+	public FlightSchedules getFlightSchedule() {
+		return this.flight_number;
+	};
+	
 	
 }

@@ -11,19 +11,20 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.flight.entity.FlightSchedules;
 import com.flight.entity.ItineraryReservations;
 import com.flight.entity.Legs;
+import com.flight.helper.PrivilegeCheck;
 import com.flight.repository.FlightSchedulesRepository;
 import com.flight.repository.ItineraryReservationsRepository;
 
 @RestController
 @RequestMapping("flight_schedules")
-public class FlightSchedulesController {
+public class FlightSchedulesController extends PrivilegeCheck {
 
 	@Autowired
 	private FlightSchedulesRepository flightSchedulesRepository;
@@ -31,21 +32,45 @@ public class FlightSchedulesController {
 	@Autowired
 	private ItineraryReservationsRepository itineraryReservationsRepository;
 	
-	@PostMapping("/save")
-	public ResponseEntity<FlightSchedules> createNewFlight(@RequestBody FlightSchedules flightSchedules) {
+	@PostMapping("/save/{passenger_id}")//*************************************
+	public ResponseEntity<FlightSchedules> createNewFlight(@PathVariable("passenger_id") int passenger_id, FlightSchedules flightSchedules) {
 		try {
-			FlightSchedules f = flightSchedulesRepository.save(flightSchedules);
-			return new ResponseEntity<>(f, HttpStatus.OK);
+			if(privilegeCheck(passenger_id) == null) {
+				return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+			}
+			else if(privilegeCheck(passenger_id) == Boolean.TRUE) {
+				FlightSchedules f = flightSchedulesRepository.save(flightSchedules);
+				return new ResponseEntity<>(f, HttpStatus.OK);
+			}
+			else {
+				throw new Exception("Passenger does not have access to this feature!");
+			}
 		}
 		catch(Exception ex) {
+			System.out.println("Error: " + ex.getMessage());
+			System.out.println(ex.fillInStackTrace());
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	
-	@DeleteMapping("/remove/{flight_number}")
-	public void removeFlight(@PathVariable("flight_number") int flight_number)
+	@DeleteMapping("/remove/{flight_number}")//*************************************
+	public void removeFlight(@PathVariable("flight_number") int flight_number, @RequestParam int passenger_id)
 	{
-		flightSchedulesRepository.delete(flightSchedulesRepository.getById(flight_number));
+		try {
+			if(privilegeCheck(passenger_id) == null) {
+				throw new Exception("Passenger not found!");
+			}
+			else if(privilegeCheck(passenger_id) == Boolean.TRUE) {
+				flightSchedulesRepository.delete(flightSchedulesRepository.getById(flight_number));
+			}
+			else {
+				throw new Exception("Passenger does not have access to this feature!");
+			}
+		}
+		catch(Exception ex) {
+			System.out.println("Error: " + ex.getMessage());
+			System.out.println(ex.fillInStackTrace());
+		}
 	}
 	
 	public List<ItineraryReservations> viewReservations(int passenger_id) {
@@ -68,12 +93,13 @@ public class FlightSchedulesController {
 		}
 		catch(Exception ex) {
 			System.out.println("Error: " + ex.getMessage());
+			System.out.println(ex.fillInStackTrace());
 			return null;
 		}
 	}
 	
-	@GetMapping("/view/{passenger_id}")
-	public ResponseEntity<Map<Integer, List<Legs>>> viewLegs(int passenger_id) {
+	@GetMapping("/view-legs/{passenger_id}")
+	public ResponseEntity<Map<Integer, List<Legs>>> viewLegs(@PathVariable("passenger_id") int passenger_id) {
 		try {
 			List<ItineraryReservations> listOfItineraryReservations = viewReservations(passenger_id);
 			
@@ -85,6 +111,28 @@ public class FlightSchedulesController {
 				}
 				
 				return new ResponseEntity<>(legsMap, HttpStatus.OK);
+			}
+			
+			return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+		}
+		catch(Exception ex) {
+			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	@GetMapping("/view/{passenger_id}")
+	public ResponseEntity<List<FlightSchedules>> viewFlightSchedules(@PathVariable("passenger_id") int passenger_id) {
+		try {
+			List<ItineraryReservations> listOfItineraryReservations = viewReservations(passenger_id);
+			
+			if(!listOfItineraryReservations.isEmpty()) {
+				List<FlightSchedules> flightSchedules = new ArrayList<>();
+				
+				for(ItineraryReservations listOfItineraryReservation: listOfItineraryReservations) {
+					flightSchedules.add(listOfItineraryReservation.getLeg_id().get(0).getFlightSchedule());
+				}
+				
+				return new ResponseEntity<>(flightSchedules, HttpStatus.OK);
 			}
 			
 			return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
