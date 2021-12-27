@@ -38,4 +38,17 @@ public class FlightSchedules {
 	
 	@Column(nullable=false)
 	private int arrival_date_time;
+
+	public Airports getOrigin_airport_code() {
+		return origin_airport_code;
+	}
+
+	public Airports getDestination_airport_code() {
+		return destination_airport_code;
+	}
+	
+	public int getFlight_number() {
+		return this.flight_number;
+	}
+	
 }

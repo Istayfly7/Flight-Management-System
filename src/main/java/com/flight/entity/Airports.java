@@ -22,4 +22,9 @@ public class Airports {
 	private String airport_location;
 	
 	private String other_details;
+
+	public int getAirport_code() {
+		return airport_code;
+	}
+	
 }

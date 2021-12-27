@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.flight.entity.FlightSchedules;
 import com.flight.entity.ItineraryReservations;
 import com.flight.entity.Legs;
+import com.flight.entity.User;
 import com.flight.helper.PrivilegeCheck;
 import com.flight.repository.FlightSchedulesRepository;
 import com.flight.repository.ItineraryReservationsRepository;
@@ -32,8 +34,9 @@ public class FlightSchedulesController extends PrivilegeCheck {
 	@Autowired
 	private ItineraryReservationsRepository itineraryReservationsRepository;
 	
-	@PostMapping("/save/{passenger_id}")//*************************************
-	public ResponseEntity<FlightSchedules> createNewFlight(@PathVariable("passenger_id") int passenger_id, FlightSchedules flightSchedules) {
+	
+	@PostMapping("/save/{passenger_id}")
+	public ResponseEntity<FlightSchedules> createNewFlight(@PathVariable("passenger_id") int passenger_id, @RequestBody FlightSchedules flightSchedules) {
 		try {
 			if(privilegeCheck(passenger_id) == null) {
 				return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
@@ -53,7 +56,7 @@ public class FlightSchedulesController extends PrivilegeCheck {
 		}
 	}
 	
-	@DeleteMapping("/remove/{flight_number}")//*************************************
+	@DeleteMapping("/remove/{flight_number}")
 	public void removeFlight(@PathVariable("flight_number") int flight_number, @RequestParam int passenger_id)
 	{
 		try {
@@ -70,6 +73,39 @@ public class FlightSchedulesController extends PrivilegeCheck {
 		catch(Exception ex) {
 			System.out.println("Error: " + ex.getMessage());
 			System.out.println(ex.fillInStackTrace());
+		}
+	}
+	
+	@GetMapping("/viewCustomers/{passenger_id}")
+	public ResponseEntity<List<User>> viewCustomersOnFlight(@PathVariable("passenger_id") int passenger_id, @RequestParam int flight_number){
+		try {
+			if(privilegeCheck(passenger_id) == null)
+				throw new Exception("Passenger not found!");
+			else if(privilegeCheck(passenger_id) == Boolean.TRUE) {
+				List<ItineraryReservations> listOfReservations = itineraryReservationsRepository.findAll();
+				List<User> users = new ArrayList<>();
+				
+				for(ItineraryReservations itineraryReservation: listOfReservations) {
+					if(itineraryReservation.getLeg_id().get(0).getFlight_Number().getFlight_number() == flight_number) {
+						User user = itineraryReservation.getPassenger();
+						if(user.getType() == "CUSTOMER")
+							users.add(user);
+					}
+				}
+				
+				if(!users.isEmpty()) {
+					return new ResponseEntity<>(users, HttpStatus.OK);
+				}
+				else
+					throw new Exception("No users found on flight " + flight_number +   "!");
+			}
+			else
+				throw new Exception("Passenger does not have access to this feature!");
+		}
+		catch(Exception ex) {
+			System.out.println("Error: " + ex.getMessage());
+			System.out.println(ex.fillInStackTrace());
+			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	
@@ -129,7 +165,7 @@ public class FlightSchedulesController extends PrivilegeCheck {
 				List<FlightSchedules> flightSchedules = new ArrayList<>();
 				
 				for(ItineraryReservations listOfItineraryReservation: listOfItineraryReservations) {
-					flightSchedules.add(listOfItineraryReservation.getLeg_id().get(0).getFlightSchedule());
+					flightSchedules.add(listOfItineraryReservation.getLeg_id().get(0).getFlight_Number());
 				}
 				
 				return new ResponseEntity<>(flightSchedules, HttpStatus.OK);
