@@ -22,7 +22,11 @@ public abstract class ItineraryLegs {
 	private List<Legs> leg_id;
 
 	public List<Legs> getLeg_id() {
-		return leg_id;
+		return this.leg_id;
+	}
+	
+	public ItineraryReservations getReservation_id() {
+		return this.reservation_id;
 	}
 	
 }

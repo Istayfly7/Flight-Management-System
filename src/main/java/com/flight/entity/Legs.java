@@ -49,7 +49,7 @@ public class Legs {
 		this.actual_arrival_time = actual_arrival_time;
 	}
 	
-	public FlightSchedules getFlightSchedule() {
+	public FlightSchedules getFlight_Number() {
 		return this.flight_number;
 	};
 	

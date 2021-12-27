@@ -50,4 +50,8 @@ public class ItineraryReservations extends ItineraryLegs {
 	public int getReservationId(){
 		return this.reservation_id;
 	}
+	
+	public User getPassenger() {
+		return this.passenger_id;
+	}
 }
