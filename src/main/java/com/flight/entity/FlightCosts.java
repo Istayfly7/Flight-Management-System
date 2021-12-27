@@ -37,10 +37,10 @@ public class FlightCosts {
 	}
 
 	private int calculate(FlightSchedules valid_from_date, FlightSchedules valid_to_date) {
-		return calculateDate(valid_from_date) + calculateDate(valid_to_date);
+		return calculate(valid_from_date) + calculate(valid_to_date);
 	}
 	
-	private int calculateDate(FlightSchedules valid_date) {
+	private int calculate(FlightSchedules flightSchedule) {
 		return 0;
 	}
 

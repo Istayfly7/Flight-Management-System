@@ -10,8 +10,6 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.flight.model.ItineraryLegs;
-import com.flight.model.ReservationPayments;
-import com.flight.model.TravelClassCapacity;
 
 @Entity
 @Table(name="Itinerary_Reservations")
@@ -34,11 +32,11 @@ public class ItineraryReservations extends ItineraryLegs {
 	private Payments reservation_status_code;
 	
 	/*@OneToOne(mappedBy="reservation_id")
-	private int ticket_type_code;
+	private int ticket_type_code;*/
 	
 	@OneToOne
 	@JoinColumn(name="travel_class_code")
-	private TravelClassCapacity travel_class_code;*/
+	private TravelClassCapacity travel_class_code;
 	
 	@Column(nullable=false)
 	private int date_reservation_made;//sql date object
