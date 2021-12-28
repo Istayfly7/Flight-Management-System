@@ -9,7 +9,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
-@Entity
 @Table(name="Flight_Costs")
 public class FlightCosts {
 
@@ -17,9 +16,9 @@ public class FlightCosts {
 	@JoinColumn(name="flight_number")
 	private FlightSchedules flight_number;
 	
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int aircraft_type_code;
+	@OneToOne
+	@JoinColumn(name="aircraft_type_code")
+	private TravelClassCapacity aircraft_type_code;
 	
 	@OneToOne
 	@JoinColumn(name="departure_date_time")
