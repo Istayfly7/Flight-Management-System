@@ -24,7 +24,10 @@ public class Airports {
 	private String other_details;
 
 	public int getAirport_code() {
-		return airport_code;
+		return this.airport_code;
 	}
 	
+	public String getAirport_name() {
+		return this.airport_name;
+	}
 }

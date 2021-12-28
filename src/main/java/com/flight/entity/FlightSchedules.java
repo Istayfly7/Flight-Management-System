@@ -54,5 +54,13 @@ public class FlightSchedules {
 	public int getFlight_number() {
 		return this.flight_number;
 	}
+
+	public int getDeparture_date_time() {
+		return departure_date_time;
+	}
+
+	public int getArrival_date_time() {
+		return arrival_date_time;
+	}
 	
 }
