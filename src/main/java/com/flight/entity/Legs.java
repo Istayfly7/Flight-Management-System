@@ -33,7 +33,7 @@ public class Legs {
 	@Column(nullable=false)
 	private int actual_arrival_time; //sql time object
 
-	public int getActual_depature_time() {
+	public int getActual_departure_time() {
 		return actual_departure_time;
 	}
 
@@ -51,7 +51,14 @@ public class Legs {
 	
 	public FlightSchedules getFlight_Number() {
 		return this.flight_number;
-	};
-	
+	}
+
+	public String getOrigin_airport() {
+		return origin_airport;
+	}
+
+	public String getDestination_airport() {
+		return destination_airport;
+	}
 	
 }

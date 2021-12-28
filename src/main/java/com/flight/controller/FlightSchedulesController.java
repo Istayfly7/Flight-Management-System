@@ -23,6 +23,7 @@ import com.flight.entity.User;
 import com.flight.helper.PrivilegeCheck;
 import com.flight.repository.FlightSchedulesRepository;
 import com.flight.repository.ItineraryReservationsRepository;
+import com.flight.repository.LegsRepository;
 
 @RestController
 @RequestMapping("flight_schedules")
@@ -33,6 +34,9 @@ public class FlightSchedulesController extends PrivilegeCheck {
 	
 	@Autowired
 	private ItineraryReservationsRepository itineraryReservationsRepository;
+
+	@Autowired
+	private LegsRepository legsRepository;
 	
 	
 	@PostMapping("/save/{passenger_id}")
@@ -177,4 +181,81 @@ public class FlightSchedulesController extends PrivilegeCheck {
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+
+	@GetMapping("/view_Ontime_delay/{passenger_id}")
+	public ResponseEntity<List<FlightSchedules>> viewOnTimeDelay(@PathVariable("passenger_id") int passenger_id, char code) {
+		try {
+			if(privilegeCheck(passenger_id) == null)
+				throw new Exception("Passenger not found!");
+			else if(privilegeCheck(passenger_id) == Boolean.TRUE) {
+				List<FlightSchedules> listOfFlights = viewOnTimeDelay(code);
+				
+				if(!listOfFlights.isEmpty()) {
+					return new ResponseEntity<>(listOfFlights, HttpStatus.OK);
+				}
+				else
+					throw new Exception("List of flights are null or empty!");
+			}
+			else {
+				throw new Exception("Passenger does not have access to this feature!");
+			}
+		}
+		catch(Exception ex) {
+			System.out.println("Error: " + ex.getMessage());
+			System.out.println(ex.fillInStackTrace());
+			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	public List<FlightSchedules> viewOnTimeDelay(char code) {
+		List<Legs> listOfLegs = legsRepository.findAll();
+		List<FlightSchedules> listOfFlights = new ArrayList<>();
+		boolean flag = false;
+		
+		try {
+			if(code == 'O' || code == 'o') {
+				for(Legs leg: listOfLegs) {
+					//if names equal, it means its the first leg
+					if(leg.getOrigin_airport() == leg.getFlight_Number().getOrigin_airport_code().getAirport_name()) {
+						if(leg.getActual_departure_time() == leg.getFlight_Number().getDeparture_date_time()) {
+							flag = true;
+						}
+					}
+					else if(leg.getDestination_airport() == leg.getFlight_Number().getDestination_airport_code().getAirport_name()) {
+							if(leg.getActual_arrival_time() == leg.getFlight_Number().getArrival_date_time()) {
+								if(flag == true) {
+									listOfFlights.add(leg.getFlight_Number());
+								}
+						}
+					}
+				}
+				return listOfFlights;
+			}
+			else if(code == 'D' || code == 'd') {
+				for(Legs leg: listOfLegs) {
+					//if names equal, it means its the first leg
+					if(leg.getOrigin_airport() == leg.getFlight_Number().getOrigin_airport_code().getAirport_name()) {
+						if(leg.getActual_departure_time() != leg.getFlight_Number().getDeparture_date_time()) {
+							listOfFlights.add(leg.getFlight_Number());
+						}
+					}
+					else if(leg.getDestination_airport() == leg.getFlight_Number().getDestination_airport_code().getAirport_name()) {
+						if(leg.getActual_arrival_time() != leg.getFlight_Number().getArrival_date_time()) {
+							listOfFlights.add(leg.getFlight_Number());
+						}
+					}
+				}
+				return listOfFlights;
+			}
+			else {
+				throw new Exception("{Usage: \'O\'= On Time | \'D\'= Delayed}");
+			}
+		}
+		catch(Exception ex) {
+			System.out.println("Error: " + ex.getMessage());
+			System.out.println(ex.fillInStackTrace());
+			return null;
+		}
+	}
+	
 }
