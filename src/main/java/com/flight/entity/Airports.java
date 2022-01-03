@@ -30,4 +30,9 @@ public class Airports {
 	public String getAirport_name() {
 		return this.airport_name;
 	}
+
+	public String getAirport_location() {
+		return airport_location;
+	}
+	
 }
