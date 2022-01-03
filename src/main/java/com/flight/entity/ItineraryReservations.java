@@ -1,14 +1,11 @@
 package com.flight.entity;
 
-import java.util.List;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -34,17 +31,28 @@ public class ItineraryReservations extends ItineraryLegs {
 	@JoinColumn(name="payment_id")
 	private Payments reservation_status_code;
 	
-	/*@OneToOne(mappedBy="reservation_id")
-	private int ticket_type_code;*/
+	//One-way, Round-trip, Muli-city
+	@Column(nullable=false)
+	private int ticket_type_code;
 	
-	@OneToMany
-	@JoinColumn(name="travel_class_code")
-	private List<TravelClassCapacity> travel_class_code;
+	//1st class: 10 seats, other class: 30
+	@Column(nullable=false)
+	private int travel_class_code;
 	
 	@Column(nullable=false)
 	private int date_reservation_made;//sql date object
 	
 	private int number_in_party;
+	
+	public ItineraryReservations() {}
+	
+	public ItineraryReservations(User passenger_id, int ticket_type_code, int travel_class_code, int date_reservation_made, int number_in_party) {
+		this.passenger_id = passenger_id;
+		this.ticket_type_code = ticket_type_code;
+		this.travel_class_code = travel_class_code;
+		this.date_reservation_made = date_reservation_made;
+		this.number_in_party = number_in_party;
+	}
 
 	public int getPassengerId() {
 		return this.passenger_id.getPassengerId();
@@ -57,4 +65,13 @@ public class ItineraryReservations extends ItineraryLegs {
 	public User getPassenger() {
 		return this.passenger_id;
 	}
+
+	public int getTravel_class_code() {
+		return travel_class_code;
+	}
+
+	public int getTicket_type_code() {
+		return ticket_type_code;
+	}
+	
 }

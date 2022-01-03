@@ -1,21 +1,17 @@
 package com.flight.entity;
 
-import java.util.List;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 @Entity
 @Table(name="Flight_Schedules")
-public class FlightSchedules {
+public class FlightSchedules extends FlightCosts{
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,9 +21,9 @@ public class FlightSchedules {
 	@JoinColumn(name="aircraft_type_code")
 	private FlightCosts airline_code;*/
 	
-	@OneToMany
+	@OneToOne
 	@JoinColumn(name="aircraft_type_code")
-	private List<TravelClassCapacity> usual_aircraft_type_code;
+	private TravelClassCapacity usual_aircraft_type_code;
 	
 	@OneToOne
 	@JoinColumn(name="airport_code", insertable=false, updatable=false)
