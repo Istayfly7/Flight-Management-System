@@ -27,9 +27,18 @@ public class Payments extends ReservationPayments{
 	private int payment_date; //sql date object
 	
 	@Column(nullable=false)
-	private int payment_amount; //short, int, or long
+	private double payment_amount; //short, int, or long
 	
 	public int getPaymentId() {
 		return this.payment_id;
 	}
+
+	public void setPayment_amount(double payment_amount) {
+		this.payment_amount = payment_amount;
+	}
+
+	public double getPayment_amount() {
+		return payment_amount;
+	}
+	
 }

@@ -1,9 +1,12 @@
-package com.flight.entity;
+package com.flight.model;
 
 import javax.persistence.Column;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+
+import com.flight.entity.FlightSchedules;
+import com.flight.entity.TravelClassCapacity;
 
 @Table(name="Flight_Costs")
 public abstract class FlightCosts {
@@ -27,15 +30,15 @@ public abstract class FlightCosts {
 	@Column(nullable=false)
 	private double flight_cost;
 
-	public double calculateOneWay(FlightSchedules valid_from_date, ItineraryReservations reservation) {
+	/*public double calculateOneWay(FlightSchedules valid_from_date, ItineraryReservations reservation) {
 		return calculate(valid_from_date, reservation);
-	}
+	}*/
 	
 	/*public void calculateRoundTrip(FlightSchedules valid_from_date, FlightSchedules valid_to_date, List<ItineraryReservations> reservations) {
 		return calculate(valid_from_date, reservations.get(0)) + calculate(valid_to_date, reservations.get(1)));
 	}*/
 	
-	private double calculate(FlightSchedules flightSchedule, ItineraryReservations reservation) {
+	/*private double calculate(FlightSchedules flightSchedule, ItineraryReservations reservation) {
 		double price = 0.0;
 		
 		if(reservation.getTravel_class_code() == 1) {
@@ -46,12 +49,7 @@ public abstract class FlightCosts {
 		}
 		
 		return price;
-	}
-	
-	private int calculateDistance(String originLocation, String destinationLocation) {
-		return 1;
-	}
-
+	}*/
 	
 	public void setFlight_cost(double flight_cost) {
 		this.flight_cost = flight_cost;

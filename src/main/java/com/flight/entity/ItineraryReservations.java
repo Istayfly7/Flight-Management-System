@@ -42,7 +42,7 @@ public class ItineraryReservations extends ItineraryLegs {
 	@Column(nullable=false)
 	private int date_reservation_made;//sql date object
 	
-	private int number_in_party;
+	private int number_in_party; //multiplier for payment amount
 	
 	public ItineraryReservations() {}
 	
@@ -72,6 +72,14 @@ public class ItineraryReservations extends ItineraryLegs {
 
 	public int getTicket_type_code() {
 		return ticket_type_code;
+	}
+
+	public Payments getReservation_status_code() {
+		return reservation_status_code;
+	}
+
+	public int getNumber_in_party() {
+		return number_in_party;
 	}
 	
 }

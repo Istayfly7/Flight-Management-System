@@ -9,6 +9,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import com.flight.model.FlightCosts;
+
 @Entity
 @Table(name="Flight_Schedules")
 public class FlightSchedules extends FlightCosts{
@@ -57,6 +59,14 @@ public class FlightSchedules extends FlightCosts{
 
 	public int getArrival_date_time() {
 		return arrival_date_time;
+	}
+	
+	public void calculate() {
+		this.setFlight_cost(0.24 * calculateDistance(this.origin_airport_code.getAirport_location(), this.destination_airport_code.getAirport_location()));
+	}
+	
+	private int calculateDistance(String originLocation, String destinationLocation) {//find actual distance
+		return 1;
 	}
 	
 }

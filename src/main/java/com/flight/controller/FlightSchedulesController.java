@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,6 +24,7 @@ import com.flight.entity.ItineraryReservations;
 import com.flight.entity.Legs;
 import com.flight.entity.User;
 import com.flight.helper.PrivilegeCheck;
+import com.flight.model.FlightCosts;
 import com.flight.repository.FlightSchedulesRepository;
 import com.flight.repository.ItineraryReservationsRepository;
 import com.flight.repository.LegsRepository;
@@ -47,6 +51,7 @@ public class FlightSchedulesController extends PrivilegeCheck {
 			}
 			else if(privilegeCheck(passenger_id) == Boolean.TRUE) {
 				FlightSchedules f = flightSchedulesRepository.save(flightSchedules);
+				f.calculate();
 				return new ResponseEntity<>(f, HttpStatus.OK);
 			}
 			else {
@@ -258,4 +263,36 @@ public class FlightSchedulesController extends PrivilegeCheck {
 		}
 	}
 	
+	@PutMapping("/update_fare/{admin_id}")
+	public ResponseEntity<FlightCosts> updateFare(@PathVariable("admin_id") int admin_id, @RequestParam(required=true) int flight_number, @RequestParam(required=true) int newCost){
+		try {
+			if(privilegeCheck(admin_id) == null) {
+				return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+			}
+			else if(privilegeCheck(admin_id) == Boolean.TRUE) {
+				Optional<FlightSchedules> flightScheduleData = flightSchedulesRepository.findById(flight_number);
+				
+				if(flightScheduleData.isPresent()) {
+					FlightSchedules f = flightScheduleData.get();
+					//FlightSchedules flightSchedule = i.getLeg_id().get(0).getFlight_Number();
+					f.setFlight_cost(newCost);
+					
+					FlightCosts fc = flightSchedulesRepository.save(f);
+					return new ResponseEntity<>(fc, HttpStatus.OK);
+				}
+				else {
+					throw new Exception("Passenger id not found!");
+				}
+				
+			}
+			else {
+				throw new Exception("Passenger does not have access to this feature!");
+			}
+		}
+		catch(Exception ex) {
+			System.out.println("Error: " + ex.getMessage());
+			System.out.println(ex.fillInStackTrace());
+			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 }
