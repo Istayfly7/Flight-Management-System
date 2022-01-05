@@ -1,5 +1,8 @@
 package com.flight.entity;
 
+import java.time.LocalDate;
+import java.sql.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -40,17 +43,17 @@ public class ItineraryReservations extends ItineraryLegs {
 	private int travel_class_code;
 	
 	@Column(nullable=false)
-	private int date_reservation_made;//sql date object
+	private Date date_reservation_made;//sql date object
 	
 	private int number_in_party; //multiplier for payment amount
 	
 	public ItineraryReservations() {}
 	
-	public ItineraryReservations(User passenger_id, int ticket_type_code, int travel_class_code, int date_reservation_made, int number_in_party) {
+	public ItineraryReservations(User passenger_id, int ticket_type_code, int travel_class_code, int number_in_party) {
 		this.passenger_id = passenger_id;
 		this.ticket_type_code = ticket_type_code;
 		this.travel_class_code = travel_class_code;
-		this.date_reservation_made = date_reservation_made;
+		this.date_reservation_made = Date.valueOf(LocalDate.now());
 		this.number_in_party = number_in_party;
 	}
 

@@ -9,22 +9,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.flight.entity.Airports;
-import com.flight.entity.FlightSchedules;
 import com.flight.entity.ItineraryReservations;
 import com.flight.entity.User;
 import com.flight.helper.PrivilegeCheck;
-import com.flight.model.FlightCosts;
-import com.flight.repository.FlightSchedulesRepository;
 import com.flight.repository.ItineraryReservationsRepository;
 import com.flight.repository.UserRepository;
 
@@ -76,7 +73,7 @@ public class ItineraryReservationsController extends PrivilegeCheck{
 			if(userData.isPresent()){
 				User u = userData.get();
 				
-				ItineraryReservations itineraryReservation = new ItineraryReservations(u, 1, ticketClass, 0, numberInParty);
+				ItineraryReservations itineraryReservation = new ItineraryReservations(u, 1, ticketClass, numberInParty);
 				Pair<Double, ItineraryReservations> pair = Pair.of(itineraryReservation.getLeg_id().get(0).getFlight_Number().getFlight_cost(), itineraryReservation);
 				
 				return new ResponseEntity<>(pair, HttpStatus.OK);
@@ -222,6 +219,29 @@ public class ItineraryReservationsController extends PrivilegeCheck{
 			System.out.println("Error: " + ex.getMessage());
 			System.out.println(ex.fillInStackTrace());
 			return null;
+		}
+	}
+	
+	@DeleteMapping("/remove/{reservation_id}")
+	public void removeReservation(@PathVariable("reservation_id") int reservation_id, @RequestParam int passenger_id)
+	{
+		try {
+			Optional<ItineraryReservations> itineraryData = itineraryReservationsRepository.findById(reservation_id);
+			
+			if(itineraryData.isPresent()) {
+				ItineraryReservations itineraryReservation = itineraryData.get();
+				if(passenger_id == itineraryReservation.getPassengerId())
+					itineraryReservationsRepository.delete(itineraryReservationsRepository.getById(reservation_id));
+				else
+					throw new Exception("Passenger id does not match the passenger id on the reservation!");
+			}
+			else {
+				throw new Exception("Reservation id not found!");
+			}
+		}
+		catch(Exception ex) {
+			System.out.println("Error: " + ex.getMessage());
+			System.out.println(ex.fillInStackTrace());
 		}
 	}
 	
