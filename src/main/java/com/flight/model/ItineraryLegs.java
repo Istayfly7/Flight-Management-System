@@ -17,14 +17,17 @@ public abstract class ItineraryLegs {
 	@JoinColumn(name="reservation_id")
 	private ItineraryReservations reservation_id;
 	
-	@OneToMany
-	@JoinColumn(name="leg_id")
+	@OneToMany(mappedBy="ItineraryLegs")
 	private List<Legs> leg_id;
 
 	public List<Legs> getLeg_id() {
 		return this.leg_id;
 	}
 	
+	public void setLeg_id(List<Legs> leg_id) {
+		this.leg_id = leg_id;
+	}
+
 	public ItineraryReservations getReservation_id() {
 		return this.reservation_id;
 	}

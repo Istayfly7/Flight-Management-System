@@ -1,5 +1,6 @@
 package com.flight.controller;
 
+import java.sql.Date;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +44,7 @@ public class LegsController extends PrivilegeCheck {
 	}
 	
 	@PutMapping("/update_departure/{leg_id}")
-	public ResponseEntity<Legs> updateDeparture(@RequestParam(required=true) int passenger_id, @RequestParam(required=true) int departureTime, @PathVariable(name="leg_id") int legId){
+	public ResponseEntity<Legs> updateDeparture(@RequestParam(required=true) int passenger_id, @RequestParam(required=true) Date departureTime, @PathVariable(name="leg_id") int legId){
 		try {
 			if(privilegeCheck(passenger_id) == null) {
 				return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
@@ -75,7 +76,7 @@ public class LegsController extends PrivilegeCheck {
 	}
 	
 	@PutMapping("/update_arrival/{leg_id}")
-	public ResponseEntity<Legs> updateArrival(@RequestParam(required=true) int arrivalTime, @RequestParam(required=true) int passenger_id, @PathVariable(name="leg_id") int legId){
+	public ResponseEntity<Legs> updateArrival(@RequestParam(required=true) int passenger_id, @RequestParam(required=true) Date arrivalTime, @PathVariable(name="leg_id") int legId){
 		try {
 			if(privilegeCheck(passenger_id) == null) {
 				return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);

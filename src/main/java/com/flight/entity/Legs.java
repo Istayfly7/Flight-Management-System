@@ -1,5 +1,7 @@
 package com.flight.entity;
 
+import java.sql.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -28,27 +30,26 @@ public class Legs {
 	private String destination_airport;
 	
 	@Column(nullable=false)
-	private int actual_departure_time; //sql time object
+	private Date actual_departure_time; //sql time object
 	
 	@Column(nullable=false)
-	private int actual_arrival_time; //sql time object
+	private Date actual_arrival_time; //sql time object
 
-	public int getActual_departure_time() {
+	/*{
+		this.origin_airport = flight_number.getOrigin_airport_code().getAirport_location();
+		this.destination_airport = flight_number.getDestination_airport_code().getAirport_location();
+		this.actual_departure_time = flight_number.getDeparture_date_time();
+		this.actual_arrival_time = flight_number.getArrival_date_time();
+	}*/
+	
+	public Date getActual_departure_time() {
 		return actual_departure_time;
 	}
 
-	public void setActual_departure_time(int actual_departure_time) {
-		this.actual_departure_time = actual_departure_time;
-	}
-
-	public int getActual_arrival_time() {
+	public Date getActual_arrival_time() {
 		return actual_arrival_time;
 	}
 
-	public void setActual_arrival_time(int actual_arrival_time) {
-		this.actual_arrival_time = actual_arrival_time;
-	}
-	
 	public FlightSchedules getFlight_Number() {
 		return this.flight_number;
 	}
@@ -60,5 +61,25 @@ public class Legs {
 	public String getDestination_airport() {
 		return destination_airport;
 	}
+
+	public void setOrigin_airport(String origin_airport) {
+		this.origin_airport = origin_airport;
+	}
+
+	public void setDestination_airport(String destination_airport) {
+		this.destination_airport = destination_airport;
+	}
+
+	public void setActual_departure_time(Date actual_departure_time) {
+		this.actual_departure_time = actual_departure_time;
+	}
+
+	public void setActual_arrival_time(Date actual_arrival_time) {
+		this.actual_arrival_time = actual_arrival_time;
+	}
+
+	
+	
+
 	
 }
