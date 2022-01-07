@@ -1,5 +1,6 @@
 package com.flight.controller;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -19,21 +20,31 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.flight.entity.Airports;
+import com.flight.entity.FlightSchedules;
 import com.flight.entity.ItineraryReservations;
+import com.flight.entity.Legs;
 import com.flight.entity.User;
 import com.flight.helper.PrivilegeCheck;
+import com.flight.repository.FlightSchedulesRepository;
 import com.flight.repository.ItineraryReservationsRepository;
+import com.flight.repository.LegsRepository;
 import com.flight.repository.UserRepository;
 
 @RestController
 @RequestMapping("itinerary_reservations")
-public class ItineraryReservationsController extends PrivilegeCheck{
+public class ItineraryReservationsController extends PrivilegeCheck {
 
 	@Autowired
 	private ItineraryReservationsRepository itineraryReservationsRepository;
 	
 	@Autowired
+	private FlightSchedulesRepository flightSchedulesRepository;
+	
+	@Autowired
 	private UserRepository userRepository;
+	
+	@Autowired
+	private LegsRepository legsRepository;
 	
 	@GetMapping("/view/{passenger_id}")
 	public ResponseEntity<ItineraryReservations> viewItinerary(@PathVariable("passenger_id") int passenger_id, @RequestParam int reservation_id){
@@ -65,8 +76,8 @@ public class ItineraryReservationsController extends PrivilegeCheck{
 		}
 	}
 	
-	@GetMapping("/create_one_way/{passenger_id}")//use airports*********!!!!!!!!
-	public ResponseEntity<Pair<Double, ItineraryReservations>> createOneWay(@PathVariable("passenger_id") int passenger_id, @RequestParam int ticketClass, @RequestParam int numberInParty, @RequestBody Airports from, @RequestBody Airports to) {
+	@GetMapping("/create_one_way/{passenger_id}")
+	public ResponseEntity<Pair<Double, ItineraryReservations>> createOneWay(@PathVariable("passenger_id") int passenger_id, @RequestParam int ticketClass, @RequestParam int numberInParty, @RequestParam Date date, @RequestBody Airports from, @RequestBody Airports to) {
 		Optional<User> userData = userRepository.findById(passenger_id);
 		
 		try {
@@ -74,9 +85,15 @@ public class ItineraryReservationsController extends PrivilegeCheck{
 				User u = userData.get();
 				
 				ItineraryReservations itineraryReservation = new ItineraryReservations(u, 1, ticketClass, numberInParty);
-				Pair<Double, ItineraryReservations> pair = Pair.of(itineraryReservation.getLeg_id().get(0).getFlight_Number().getFlight_cost(), itineraryReservation);
+				if(flightCheck(date, from, to, itineraryReservation)) {
+					//ItineraryReservations itineraryReservation = new ItineraryReservations(u, 1, ticketClass, numberInParty);
+					Pair<Double, ItineraryReservations> pair = Pair.of(itineraryReservation.getLeg_id().get(0).getFlight_Number().getFlight_cost(), itineraryReservation);
 				
-				return new ResponseEntity<>(pair, HttpStatus.OK);
+					return new ResponseEntity<>(pair, HttpStatus.OK);
+				}
+				else {
+					throw new Exception("No flight passage {From: " + from.getAirport_location() + " - To: " + to.getAirport_location() + "} on " + date.toString());
+				}
 			}
 			else {
 				throw new Exception("Passenger id not found!");
@@ -91,9 +108,9 @@ public class ItineraryReservationsController extends PrivilegeCheck{
 	}
 	
 	@GetMapping("/create_round_trip/{passenger_id}")
-	public ResponseEntity<Pair<Double, List<ItineraryReservations>>> createRoundTrip(@PathVariable("passenger_id") int passenger_id, @RequestParam int ticketClass, @RequestParam int numberInParty, @RequestBody Airports from, @RequestBody Airports to) {
-		Pair<Double, ItineraryReservations> firstWay = createOneWay(passenger_id, ticketClass, numberInParty, from, to).getBody();
-		Pair<Double, ItineraryReservations> secWay = createOneWay(passenger_id, ticketClass, numberInParty, to, from).getBody();
+	public ResponseEntity<Pair<Double, List<ItineraryReservations>>> createRoundTrip(@PathVariable("passenger_id") int passenger_id, @RequestParam int ticketClass, @RequestParam int numberInParty, @RequestParam List<Date> dates, @RequestBody Airports from, @RequestBody Airports to) {
+		Pair<Double, ItineraryReservations> firstWay = createOneWay(passenger_id, ticketClass, numberInParty, dates.get(0), from, to).getBody();
+		Pair<Double, ItineraryReservations> secWay = createOneWay(passenger_id, ticketClass, numberInParty, dates.get(1), to, from).getBody();
 		
 		try {
 			if(firstWay == null || secWay == null)
@@ -112,14 +129,14 @@ public class ItineraryReservationsController extends PrivilegeCheck{
 	}
 	
 	@GetMapping("/create_multi_city/{passenger_id}")
-	public ResponseEntity<Pair<Double, List<ItineraryReservations>>> createMultiCity(@PathVariable("passenger_id") int passenger_id, @RequestParam int ticketClass, @RequestParam int numberInParty, @RequestBody List<Airports> from, @RequestBody List<Airports> to) {
+	public ResponseEntity<Pair<Double, List<ItineraryReservations>>> createMultiCity(@PathVariable("passenger_id") int passenger_id, @RequestParam int ticketClass, @RequestParam int numberInParty, @RequestParam List<Date> dates, @RequestBody List<Airports> from, @RequestBody List<Airports> to) {
 		List<Pair<Double, ItineraryReservations>> itineraryCostList = new ArrayList<>();
 		List<ItineraryReservations> itineraryList = new ArrayList<>();
 		double totPrice = 0.0;
 		
 		try {
 			for(int i = 0; i < from.size(); i++) {
-				itineraryCostList.add(createOneWay(passenger_id, ticketClass, numberInParty, from.get(i), to.get(i)).getBody());
+				itineraryCostList.add(createOneWay(passenger_id, ticketClass, numberInParty, dates.get(i), from.get(i), to.get(i)).getBody());
 			}
 		
 			for(int i = 0; i < itineraryCostList.size(); i++) {
@@ -141,7 +158,7 @@ public class ItineraryReservationsController extends PrivilegeCheck{
 		}
 	}
 	
-	@PostMapping("/save-one-way/{passenger_id}")
+	@PostMapping("/save-one-way/{passenger_id}")//finish createlegs
 	public ResponseEntity<ItineraryReservations> confirm(@PathVariable("passenger_id") int passenger_id, @RequestParam double payment, @RequestBody ItineraryReservations itineraryReservations) {//set flight cost... confirm when payment status is ok and passenger_id match
 		try {
 			Optional<User> userData = userRepository.findById(passenger_id);
@@ -245,10 +262,35 @@ public class ItineraryReservationsController extends PrivilegeCheck{
 		}
 	}
 	
-	/*public double calculateCost(ItineraryReservations reservation) {
-		FlightSchedules flightSchedule = reservation.getLeg_id().get(0).getFlight_Number();
-				
-		return flightSchedule.calculateOneWay(flightSchedule, reservation);
-	}*/
+	private boolean flightCheck(Date date, Airports from, Airports to, ItineraryReservations itineraryReservation) {//************************
+		List<FlightSchedules> listOfFlights = flightSchedulesRepository.findAll();
+		
+		try {
+			for(int i = 0; i < listOfFlights.size(); i++) {
+				if(listOfFlights.get(i).getDeparture_date_time() == date && listOfFlights.get(i).getOrigin_airport_code() == from
+						&& listOfFlights.get(i).getDestination_airport_code() == to) {
+					List<Legs> legs = itineraryReservation.getLeg_id();
+					List<Legs> listOfLegs = legsRepository.findAll();
+					
+					for(Legs leg: listOfLegs)//saving legs for itinerary
+						if(leg.getFlight_Number().getFlight_number() == listOfFlights.get(i).getFlight_number()) {
+							legs.add(leg);
+							itineraryReservationsRepository.save(itineraryReservation);
+						}
+							
+					return true;
+				}
+				else if(listOfFlights.get(i).getDeparture_date_time() == date && listOfFlights.get(i).getOrigin_airport_code() == from) {
+					
+					return flightCheck(date, listOfFlights.get(++i).getOrigin_airport_code(), to, itineraryReservation);
+				}
+			}
+			
+			return false;
+		}
+		catch(Exception ex) {
+			return false;
+		}
+	}
 
 }

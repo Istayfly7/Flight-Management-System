@@ -51,6 +51,7 @@ public class FlightSchedulesController extends PrivilegeCheck {
 			}
 			else if(privilegeCheck(passenger_id) == Boolean.TRUE) {
 				FlightSchedules f = flightSchedulesRepository.save(flightSchedules);
+				
 				f.calculate();
 				return new ResponseEntity<>(f, HttpStatus.OK);
 			}

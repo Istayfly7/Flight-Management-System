@@ -1,5 +1,7 @@
 package com.flight.entity;
 
+import java.sql.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -36,10 +38,10 @@ public class FlightSchedules extends FlightCosts{
 	private Airports destination_airport_code;
 	
 	@Column(nullable=false)
-	private int departure_date_time;
+	private Date departure_date_time;
 	
 	@Column(nullable=false)
-	private int arrival_date_time;
+	private Date arrival_date_time;
 
 	public Airports getOrigin_airport_code() {
 		return origin_airport_code;
@@ -53,11 +55,11 @@ public class FlightSchedules extends FlightCosts{
 		return this.flight_number;
 	}
 
-	public int getDeparture_date_time() {
+	public Date getDeparture_date_time() {
 		return departure_date_time;
 	}
 
-	public int getArrival_date_time() {
+	public Date getArrival_date_time() {
 		return arrival_date_time;
 	}
 	
