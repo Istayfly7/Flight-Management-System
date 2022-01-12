@@ -29,11 +29,11 @@ public class FlightSchedules {
 	@ManyToOne
 	private TravelClassCapacity usual_aircraft_type_code;
 	
-	@OneToOne
+	@ManyToOne
 	@JoinColumn(insertable=false, updatable=false)
 	private Airports origin_airport_code;
 	
-	@OneToOne
+	@ManyToOne
 	@JoinColumn(insertable=false, updatable=false)
 	private Airports destination_airport_code;
 	

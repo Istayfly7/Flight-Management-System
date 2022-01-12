@@ -24,7 +24,7 @@ public class Legs {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int leg_id;
 	
-	@OneToOne
+	@ManyToOne
 	@JoinColumn(name="flight_number")
 	private FlightSchedules flight_number;
 	
@@ -52,8 +52,17 @@ public class Legs {
 	}*/
 	
 	
+	
 	public Time getActual_departure_time() {
 		return actual_departure_time;
+	}
+
+	public List<ItineraryLegs> getItineraryLegs() {
+		return itineraryLegs;
+	}
+
+	public void setItineraryLegs(List<ItineraryLegs> itineraryLegs) {
+		this.itineraryLegs = itineraryLegs;
 	}
 
 	public void setFlight_number(FlightSchedules flight_number) {

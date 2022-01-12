@@ -26,11 +26,11 @@ public class ItineraryReservations {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int reservation_id;
 	
-	@OneToOne
+	@ManyToOne
 	@JoinColumn(name="agent_id")
 	private BookingAgents agent_id;
 	
-	@OneToOne
+	@ManyToOne
 	@JoinColumn(name="passenger_id")
 	private User passenger_id;
 	
