@@ -1,5 +1,6 @@
 package com.flight.entity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,20 +9,24 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.IdClass;
 import javax.persistence.Table;
 
+import com.flight.id.TravelClassCapacityId;
 
+
+@SuppressWarnings("serial")
 @Entity
-//@IdClass(TravelClassCapacityId.class)
+@IdClass(TravelClassCapacityId.class)
 @Table(name="Travel_Class_Capacity")
-public class TravelClassCapacity {
+public class TravelClassCapacity implements Serializable{
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int aircraft_type_code;
 	
-	//@Id
-	@Column(nullable=false)
+	@Id
+	//@Column(nullable=false)
 	private String travel_class_code = "10,30";
 	
 	@Column(nullable=false)
@@ -80,5 +85,11 @@ public class TravelClassCapacity {
 	public int getAircraft_type_code() {
 		return aircraft_type_code;
 	}
+
+	public int getSeat_capacity() {
+		return seat_capacity;
+	}
+	
+	
 	
 }

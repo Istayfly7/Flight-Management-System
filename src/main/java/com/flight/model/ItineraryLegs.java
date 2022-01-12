@@ -1,34 +1,37 @@
 package com.flight.model;
 
-import java.util.List;
-
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
+import java.io.Serializable;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.IdClass;
 import javax.persistence.Table;
 
-import com.flight.entity.ItineraryReservations;
-import com.flight.entity.Legs;
+import com.flight.id.ItineraryLegsId;
 
+@SuppressWarnings("serial")
+@Entity
 @Table(name="Itinerary_Legs")
-public abstract class ItineraryLegs {
+@IdClass(ItineraryLegsId.class)
+public class ItineraryLegs implements Serializable{
 
-	@OneToOne
-	@JoinColumn(name="reservation_id")
-	private ItineraryReservations reservation_id;
+	//@OneToOne
+	//@JoinColumn(name="reservation_id")
+	@Id
+	private int reservation_id;
 	
-	@OneToMany(mappedBy="ItineraryLegs")
-	private List<Legs> leg_id;
+	//@OneToMany(mappedBy="ItineraryLegs")
+	@Id
+	private int leg_id;
 
-	public List<Legs> getLeg_id() {
+	public int getLeg_id() {
 		return this.leg_id;
 	}
 	
-	public void setLeg_id(List<Legs> leg_id) {
+	public void setLeg_id(int leg_id) {
 		this.leg_id = leg_id;
 	}
 
-	public ItineraryReservations getReservation_id() {
+	public int getReservation_id() {
 		return this.reservation_id;
 	}
 	

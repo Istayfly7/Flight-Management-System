@@ -1,5 +1,7 @@
 package com.flight.controller;
 
+import java.sql.Time;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -219,19 +221,22 @@ public class FlightSchedulesController extends PrivilegeCheck {
 		boolean flag = false;
 		
 		try {
+			LocalTime time;
 			if(code == 'O' || code == 'o') {
 				for(Legs leg: listOfLegs) {
 					//if names equal, it means its the first leg
 					if(leg.getOrigin_airport() == leg.getFlight_Number().getOrigin_airport_code().getAirport_name()) {
-						if(leg.getActual_departure_time() == leg.getFlight_Number().getDeparture_date_time()) {
+						time = leg.getFlight_Number().getDeparture_date_time().toLocalDateTime().toLocalTime();
+						if(leg.getActual_departure_time() == Time.valueOf(time)) {
 							flag = true;
 						}
 					}
 					else if(leg.getDestination_airport() == leg.getFlight_Number().getDestination_airport_code().getAirport_name()) {
-							if(leg.getActual_arrival_time() == leg.getFlight_Number().getArrival_date_time()) {
-								if(flag == true) {
-									listOfFlights.add(leg.getFlight_Number());
-								}
+						time = leg.getFlight_Number().getArrival_date_time().toLocalDateTime().toLocalTime();
+						if(leg.getActual_arrival_time() == Time.valueOf(time)) {
+							if(flag == true) {
+								listOfFlights.add(leg.getFlight_Number());
+							}
 						}
 					}
 				}
@@ -241,12 +246,14 @@ public class FlightSchedulesController extends PrivilegeCheck {
 				for(Legs leg: listOfLegs) {
 					//if names equal, it means its the first leg
 					if(leg.getOrigin_airport() == leg.getFlight_Number().getOrigin_airport_code().getAirport_name()) {
-						if(leg.getActual_departure_time() != leg.getFlight_Number().getDeparture_date_time()) {
+						time = leg.getFlight_Number().getDeparture_date_time().toLocalDateTime().toLocalTime();
+						if(leg.getActual_departure_time() != Time.valueOf(time)) {
 							listOfFlights.add(leg.getFlight_Number());
 						}
 					}
 					else if(leg.getDestination_airport() == leg.getFlight_Number().getDestination_airport_code().getAirport_name()) {
-						if(leg.getActual_arrival_time() != leg.getFlight_Number().getArrival_date_time()) {
+						time = leg.getFlight_Number().getArrival_date_time().toLocalDateTime().toLocalTime();
+						if(leg.getActual_arrival_time() != Time.valueOf(time)) {
 							listOfFlights.add(leg.getFlight_Number());
 						}
 					}

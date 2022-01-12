@@ -267,7 +267,7 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 		
 		try {
 			for(int i = 0; i < listOfFlights.size(); i++) {
-				if(listOfFlights.get(i).getDeparture_date_time() == date && listOfFlights.get(i).getOrigin_airport_code() == from
+				if(Date.valueOf(listOfFlights.get(i).getDeparture_date_time().toLocalDateTime().toLocalDate()) == date && listOfFlights.get(i).getOrigin_airport_code() == from
 						&& listOfFlights.get(i).getDestination_airport_code() == to) {
 					List<Legs> legs = itineraryReservation.getLeg_id();
 					List<Legs> listOfLegs = legsRepository.findAll();
@@ -280,7 +280,7 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 							
 					return true;
 				}
-				else if(listOfFlights.get(i).getDeparture_date_time() == date && listOfFlights.get(i).getOrigin_airport_code() == from) {
+				else if(Date.valueOf(listOfFlights.get(i).getDeparture_date_time().toLocalDateTime().toLocalDate()) == date && listOfFlights.get(i).getOrigin_airport_code() == from) {
 					
 					return flightCheck(date, listOfFlights.get(++i).getOrigin_airport_code(), to, itineraryReservation);
 				}
