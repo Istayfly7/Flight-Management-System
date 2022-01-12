@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.flight.entity.TravelClassCapacity;
@@ -22,19 +21,13 @@ public class TravelClassCapacityRepositoryTests {
 	private TravelClassCapacityRepository travelClassCapacityRepository;
 	
 	@Test
-	@Rollback(false)
-    //@Order(1) ust testcase_1 with name ascending
+	//@Rollback(false)
 	public void testCreateNewTravelClassCapacity() {
 		TravelClassCapacity travelClassCapacity = new TravelClassCapacity();
+		travelClassCapacity.setAircraft_type_code(1);
 	
 		TravelClassCapacity travelClassCapacityData = travelClassCapacityRepository.save(travelClassCapacity);
 		assertTrue((travelClassCapacity.getSeat_capacity() == 40) && (travelClassCapacityData.getAircraft_type_code() > 0));
 	}
 	
-	/*@Test
-    @Order(2)
-    public void testListTravelClassCapacity() {
-        List<TravelClassCapacity> listOfTravelClass = travelClassCapacityRepository.findAll();
-        assertTrue(listOfTravelClass.size() > 0);
-    }*/
 }

@@ -1,8 +1,6 @@
 package com.flight.entity;
 
 import java.sql.Time;
-import java.util.List;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -10,11 +8,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
-
-import com.flight.model.ItineraryLegs;
 
 @Entity
 @Table(name="Legs")
@@ -28,10 +22,6 @@ public class Legs {
 	@JoinColumn(name="flight_number")
 	private FlightSchedules flight_number;
 	
-	@OneToMany
-	@JoinColumn
-	private List<ItineraryLegs> itineraryLegs;
-	
 	@Column(nullable=false)
 	private String origin_airport;
 	
@@ -39,10 +29,10 @@ public class Legs {
 	private String destination_airport;
 	
 	@Column(nullable=false)
-	private Time actual_departure_time; //sql time object
+	private Time actual_departure_time;
 	
 	@Column(nullable=false)
-	private Time actual_arrival_time; //sql time object
+	private Time actual_arrival_time;
 
 	/*{
 		this.origin_airport = flight_number.getOrigin_airport_code().getAirport_location();
@@ -51,18 +41,17 @@ public class Legs {
 		this.actual_arrival_time = flight_number.getArrival_date_time();
 	}*/
 	
+	public Legs(FlightSchedules flight_number) {
+		this.flight_number = flight_number;
+		this.origin_airport = flight_number.getOrigin_airport_code().getAirport_name();
+		this.destination_airport = flight_number.getDestination_airport_code().getAirport_name();
+		this.actual_departure_time = Time.valueOf(flight_number.getDeparture_date_time().toLocalDateTime().toLocalTime());
+		this.actual_arrival_time = Time.valueOf(flight_number.getArrival_date_time().toLocalDateTime().toLocalTime());
+	}
 	
 	
 	public Time getActual_departure_time() {
 		return actual_departure_time;
-	}
-
-	public List<ItineraryLegs> getItineraryLegs() {
-		return itineraryLegs;
-	}
-
-	public void setItineraryLegs(List<ItineraryLegs> itineraryLegs) {
-		this.itineraryLegs = itineraryLegs;
 	}
 
 	public void setFlight_number(FlightSchedules flight_number) {

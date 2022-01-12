@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.flight.entity.BookingAgents;
@@ -23,7 +22,7 @@ public class BookingAgentsRepositoryTests {
 	private BookingAgentsRepository bookingAgentsRepository;
 	
 	@Test
-	@Rollback(false)
+	//@Rollback(false)
 	public void testCreateNewBookingAgent() {
 		BookingAgents bookingAgent = new BookingAgents();
 		bookingAgent.setAgent_name("Bob");

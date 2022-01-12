@@ -26,10 +26,8 @@ public class Payments {
 	@JoinColumn(name="reservation_id")
 	private List<ReservationPayments> payment_status_code;
 	
-	@Column(nullable=false)
 	private Date payment_date; //sql date object
 	
-	@Column(nullable=false)
 	private double payment_amount; //short, int, or long
 	
 	public int getPaymentId() {

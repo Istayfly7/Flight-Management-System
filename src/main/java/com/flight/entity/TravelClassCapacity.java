@@ -6,8 +6,6 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
 import javax.persistence.Table;
@@ -22,7 +20,7 @@ import com.flight.id.TravelClassCapacityId;
 public class TravelClassCapacity implements Serializable{
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	//@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int aircraft_type_code;
 	
 	@Id
@@ -31,6 +29,13 @@ public class TravelClassCapacity implements Serializable{
 	
 	@Column(nullable=false)
 	private int seat_capacity = addClassCodes(parseTravelClassCode());
+	
+	public TravelClassCapacity() {}
+	
+	public TravelClassCapacity(int aircraft_type_code, String travel_class_code) {
+		this.aircraft_type_code = aircraft_type_code;
+		this.travel_class_code = travel_class_code;
+	}
 	
 	public List<Integer> parseTravelClassCode(){
 		List<Integer> listOfNum = new ArrayList<>();
@@ -84,6 +89,11 @@ public class TravelClassCapacity implements Serializable{
 
 	public int getAircraft_type_code() {
 		return aircraft_type_code;
+	}
+	
+
+	public void setAircraft_type_code(int aircraft_type_code) {
+		this.aircraft_type_code = aircraft_type_code;
 	}
 
 	public int getSeat_capacity() {
