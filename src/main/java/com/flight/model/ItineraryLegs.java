@@ -1,35 +1,70 @@
 package com.flight.model;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.IdClass;
 import javax.persistence.Table;
 
-import com.flight.entity.ItineraryReservations;
-import com.flight.entity.Legs;
+import com.flight.id.ItineraryLegsId;
 
+@SuppressWarnings("serial")
+@Entity
 @Table(name="Itinerary_Legs")
-public abstract class ItineraryLegs {
+@IdClass(ItineraryLegsId.class)
+public class ItineraryLegs implements Serializable{
 
-	@OneToOne
-	@JoinColumn(name="reservation_id")
-	private ItineraryReservations reservation_id;
+	@Id
+	private int reservation_id;
 	
-	@OneToMany(mappedBy="ItineraryLegs")
-	private List<Legs> leg_id;
+	//private int leg_id;
+	@Id
+	private String leg_id;
 
-	public List<Legs> getLeg_id() {
-		return this.leg_id;
-	}
+	public ItineraryLegs() {}
 	
-	public void setLeg_id(List<Legs> leg_id) {
+	public ItineraryLegs(int reservation_id, String leg_id) {
+		this.reservation_id = reservation_id;
 		this.leg_id = leg_id;
 	}
+	
+	public List<Integer> getLegIds() {
+		String[] legs = leg_id.split(",");
+		List<Integer> listOfLegs = new ArrayList<>();
+		
+		for(String leg: legs) {
+			listOfLegs.add(Integer.parseInt(leg));
+		}
+		return listOfLegs;
+	}
+	
+	public void setLeg_id(List<Integer> leg_id) {
+		String legs = "";
+		for(int i = 0; i < leg_id.size(); i++) {
+			if(i == leg_id.size()-1) {
+				legs += leg_id.get(i);
+			}
+			else {
+				legs += leg_id.get(i) + ",";
+			}
+		}
+		
+		this.leg_id = legs.toString();
+	}
+	
+	/*public void setLeg_id(String leg_id) {
+		this.leg_id = leg_id;
+	}*/
 
-	public ItineraryReservations getReservation_id() {
+	public int getReservation_id() {
 		return this.reservation_id;
+	}
+
+	public void setReservation_id(int reservation_id) {
+		this.reservation_id = reservation_id;
 	}
 	
 }

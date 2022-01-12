@@ -1,27 +1,39 @@
 package com.flight.model;
 
+import java.io.Serializable;
+import java.sql.Date;
+
 import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.IdClass;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.flight.entity.FlightSchedules;
-import com.flight.entity.TravelClassCapacity;
+import com.flight.id.FlightCostsId;
 
+@SuppressWarnings("serial")
+@Entity
 @Table(name="Flight_Costs")
-public abstract class FlightCosts {
+@IdClass(FlightCostsId.class)
+public class FlightCosts implements Serializable{
 
-	@OneToOne
-	@JoinColumn(name="flight_number")
-	private FlightSchedules flight_number;
+	//@OneToOne
+	//@JoinColumn(name="flight_number")
+	@Id
+	private int flight_number;
 	
-	@OneToOne
-	@JoinColumn(name="aircraft_type_code")
-	private TravelClassCapacity aircraft_type_code;
+	//@OneToOne
+	//@JoinColumn(name="aircraft_type_code")
+	@Id
+	private int aircraft_type_code;
 	
-	@OneToOne
-	@JoinColumn(name="departure_date_time")
-	private FlightSchedules valid_from_date;
+	//@OneToOne
+	//@JoinColumn(name="departure_date_time")
+	@Id
+	private Date valid_from_date;
 	
 	@OneToOne
 	@JoinColumn(name="arrival_date_time")
@@ -59,7 +71,7 @@ public abstract class FlightCosts {
 		return this.flight_cost;
 	}
 	
-	public FlightSchedules getFlight() {
+	public int getFlight() {
 		return this.flight_number;
 	}
 
