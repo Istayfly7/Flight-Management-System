@@ -1,8 +1,6 @@
 package com.flight.entity;
 
 import java.sql.Timestamp;
-import java.util.List;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -10,8 +8,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -63,6 +59,11 @@ public class FlightSchedules {
 		return arrival_date_time;
 	}
 	
+	//special ocassions
+	public void setFlight_number(int flight_number) {
+		this.flight_number = flight_number;
+	}
+
 	public void setOrigin_airport_code(Airports origin_airport_code) {
 		this.origin_airport_code = origin_airport_code;
 	}
@@ -82,13 +83,17 @@ public class FlightSchedules {
 	public void setUsual_aircraft_type_code(TravelClassCapacity usual_aircraft_type_code) {
 		this.usual_aircraft_type_code = usual_aircraft_type_code;
 	}
+	
+	public TravelClassCapacity getUsual_aircraft_type_code() {
+		return usual_aircraft_type_code;
+	}
 
-	public void calculate() {
+	/*public void calculate() {
 		//this.setFlight_cost(0.24 * calculateDistance(this.origin_airport_code.getAirport_location(), this.destination_airport_code.getAirport_location()));
 	}
 	
 	private int calculateDistance(String originLocation, String destinationLocation) {//find actual distance
 		return 1;
-	}
+	}*/
 	
 }

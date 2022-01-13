@@ -12,8 +12,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import com.flight.model.ReservationPayments;
-
 @Entity
 @Table(name="Payments")
 public class Payments {

@@ -1,4 +1,4 @@
-package com.flight.model;
+package com.flight.entity;
 
 import java.io.Serializable;
 

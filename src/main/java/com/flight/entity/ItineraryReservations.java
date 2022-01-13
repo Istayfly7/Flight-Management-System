@@ -12,11 +12,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
-
-import com.flight.model.ItineraryLegs;
-import com.flight.model.ReservationPayments;
 
 @Entity
 @Table(name="Itinerary_Reservations")
@@ -46,7 +42,6 @@ public class ItineraryReservations {
 	@ManyToOne
 	private TravelClassCapacity travel_class_code;
 	
-	@Column(nullable=false)
 	private Date date_reservation_made;//sql date object
 	
 	private int number_in_party; //multiplier for payment amount
