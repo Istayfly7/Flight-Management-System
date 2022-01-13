@@ -11,8 +11,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import com.flight.model.FlightCosts;
-
 @Entity
 @Table(name="Ref_Calendar")
 public class RefCalendar {

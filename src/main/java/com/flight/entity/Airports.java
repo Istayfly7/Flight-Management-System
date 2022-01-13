@@ -39,6 +39,11 @@ public class Airports {
 		return other_details;
 	}
 
+	//special occasions
+	public void setAirport_code(int airport_code) {
+		this.airport_code = airport_code;
+	}
+
 	public void setAirport_name(String airport_name) {
 		this.airport_name = airport_name;
 	}

@@ -1,4 +1,4 @@
-package com.flight.model;
+package com.flight.entity;
 
 import java.io.Serializable;
 import java.sql.Date;
@@ -11,7 +11,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
-import com.flight.entity.FlightSchedules;
 import com.flight.id.FlightCostsId;
 
 @SuppressWarnings("serial")

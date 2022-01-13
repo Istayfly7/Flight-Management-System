@@ -9,24 +9,24 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.flight.entity.FlightSchedules;
+import com.flight.entity.ItineraryLegs;
 import com.flight.entity.ItineraryReservations;
 import com.flight.entity.Legs;
 import com.flight.entity.User;
 import com.flight.helper.PrivilegeCheck;
-import com.flight.model.FlightCosts;
 import com.flight.repository.FlightSchedulesRepository;
 import com.flight.repository.ItineraryReservationsRepository;
 import com.flight.repository.LegsRepository;
@@ -54,7 +54,7 @@ public class FlightSchedulesController extends PrivilegeCheck {
 			else if(privilegeCheck(passenger_id) == Boolean.TRUE) {
 				FlightSchedules f = flightSchedulesRepository.save(flightSchedules);
 				
-				f.calculate();
+				//f.calculate();
 				return new ResponseEntity<>(f, HttpStatus.OK);
 			}
 			else {
@@ -89,7 +89,7 @@ public class FlightSchedulesController extends PrivilegeCheck {
 	}
 	
 	@GetMapping("/viewCustomers/{passenger_id}")
-	public ResponseEntity<List<User>> viewCustomersOnFlight(@PathVariable("passenger_id") int passenger_id, @RequestParam int flight_number){
+	public ResponseEntity<List<User>> viewCustomersOnFlight(@PathVariable("passenger_id") int passenger_id, @RequestBody FlightSchedules flightSchedules){
 		try {
 			if(privilegeCheck(passenger_id) == null)
 				throw new Exception("Passenger not found!");
@@ -98,7 +98,7 @@ public class FlightSchedulesController extends PrivilegeCheck {
 				List<User> users = new ArrayList<>();
 				
 				for(ItineraryReservations itineraryReservation: listOfReservations) {
-					if(itineraryReservation.getLeg_id().get(0).getFlight_Number().getFlight_number() == flight_number) {
+					if(itineraryReservation.getTravel_class_code().equals(flightSchedules.getUsual_aircraft_type_code())) {
 						User user = itineraryReservation.getPassenger();
 						if(user.getType() == "CUSTOMER")
 							users.add(user);
@@ -109,7 +109,7 @@ public class FlightSchedulesController extends PrivilegeCheck {
 					return new ResponseEntity<>(users, HttpStatus.OK);
 				}
 				else
-					throw new Exception("No users found on flight " + flight_number +   "!");
+					throw new Exception("No users found on flight-" + flightSchedules.getFlight_number() +   "!");
 			}
 			else
 				throw new Exception("Passenger does not have access to this feature!");
@@ -155,7 +155,23 @@ public class FlightSchedulesController extends PrivilegeCheck {
 				Map<Integer, List<Legs>> legsMap = new LinkedHashMap<>();
 				
 				for(int i= 0; i < listOfItineraryReservations.size(); i++) {
-					legsMap.put(i, listOfItineraryReservations.get(i).getLeg_id());
+					for(ItineraryLegs itineraryLeg: listOfItineraryReservations.get(i).getTicket_type_code()) {
+						List<Legs> legs = new ArrayList<>();
+						for(int id: itineraryLeg.getLegIds()) {
+							Optional<Legs> legData = legsRepository.findById(id);
+							
+							if(legData.isPresent()) {
+								Legs leg = legData.get();
+								legs.add(leg);
+							}
+							else {
+								throw new Exception("No leg found with id# " + id +   "!");
+							}
+						}
+							 
+						legsMap.put(i, legs);
+
+					}
 				}
 				
 				return new ResponseEntity<>(legsMap, HttpStatus.OK);
@@ -169,15 +185,28 @@ public class FlightSchedulesController extends PrivilegeCheck {
 	}
 	
 	@GetMapping("/view/{passenger_id}")
-	public ResponseEntity<List<FlightSchedules>> viewFlightSchedules(@PathVariable("passenger_id") int passenger_id) {
+	public ResponseEntity<List<Pair<Integer, FlightSchedules>>> viewFlightSchedules(@PathVariable("passenger_id") int passenger_id) {
 		try {
 			List<ItineraryReservations> listOfItineraryReservations = viewReservations(passenger_id);
 			
 			if(!listOfItineraryReservations.isEmpty()) {
-				List<FlightSchedules> flightSchedules = new ArrayList<>();
-				
-				for(ItineraryReservations listOfItineraryReservation: listOfItineraryReservations) {
-					flightSchedules.add(listOfItineraryReservation.getLeg_id().get(0).getFlight_Number());
+				List<Pair<Integer, FlightSchedules>> flightSchedules = new ArrayList<>();
+				 
+				for(int i = 0; i < listOfItineraryReservations.size(); i++) {
+					for(ItineraryLegs itineraryLeg: listOfItineraryReservations.get(i).getTicket_type_code()) {
+						for(int id: itineraryLeg.getLegIds()){
+							Optional<Legs> legData = legsRepository.findById(id);
+							if(legData.isPresent()) {
+								Legs leg = legData.get();
+								
+								flightSchedules.add(Pair.of(i, leg.getFlight_Number()));
+							}
+							else {
+								throw new Exception("No leg found with id# " + id +   "!");
+							}
+						}
+					}
+					
 				}
 				
 				return new ResponseEntity<>(flightSchedules, HttpStatus.OK);
@@ -271,36 +300,5 @@ public class FlightSchedulesController extends PrivilegeCheck {
 		}
 	}
 	
-	@PutMapping("/update_fare/{admin_id}")
-	public ResponseEntity<FlightCosts> updateFare(@PathVariable("admin_id") int admin_id, @RequestParam(required=true) int flight_number, @RequestParam(required=true) int newCost){
-		try {
-			if(privilegeCheck(admin_id) == null) {
-				return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-			}
-			else if(privilegeCheck(admin_id) == Boolean.TRUE) {
-				Optional<FlightSchedules> flightScheduleData = flightSchedulesRepository.findById(flight_number);
-				
-				if(flightScheduleData.isPresent()) {
-					FlightSchedules f = flightScheduleData.get();
-					//FlightSchedules flightSchedule = i.getLeg_id().get(0).getFlight_Number();
-					f.setFlight_cost(newCost);
-					
-					FlightCosts fc = flightSchedulesRepository.save(f);
-					return new ResponseEntity<>(fc, HttpStatus.OK);
-				}
-				else {
-					throw new Exception("Passenger id not found!");
-				}
-				
-			}
-			else {
-				throw new Exception("Passenger does not have access to this feature!");
-			}
-		}
-		catch(Exception ex) {
-			System.out.println("Error: " + ex.getMessage());
-			System.out.println(ex.fillInStackTrace());
-			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-	}
+	
 }
