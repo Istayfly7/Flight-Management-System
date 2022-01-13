@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.flight.repository.UserRepository;
+import com.flight.entity.CustomerUser;
+import com.flight.entity.EmployeeUser;
 import com.flight.entity.User;
 import com.flight.helper.PrivilegeCheck;
 

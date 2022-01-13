@@ -1,20 +1,27 @@
 package com.flight.entity;
 
 import javax.persistence.Column;
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.DiscriminatorType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @Entity
 @Table(name="Passengers")
-//@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-//@DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
-//@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
-/*@JsonSubTypes({@JsonSubTypes.Type(value = CustomerUser.class, name = "CUSTOMER"),
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonSubTypes({@JsonSubTypes.Type(value = CustomerUser.class, name = "CUSTOMER"),
         @JsonSubTypes.Type(value = EmployeeUser.class, name = "EMPLOYEE")
-})*/
+})
 public abstract class User {
 	
 	@Id
@@ -41,7 +48,7 @@ public abstract class User {
 	@Column(nullable=false)
 	private String city;
 	
-	@Column(nullable=false)
+	//@Column(nullable=false)
 	private String state_province_county;
 	
 	@Column(nullable=false)
@@ -49,8 +56,8 @@ public abstract class User {
 	
 	private String other_passenger_details;
 	
-	/*@Column(insertable=false, updatable=false)
-	private String type;*/
+	@Column(insertable=false, updatable=false)
+	private String type;
 	
 	public abstract String getType();
 	

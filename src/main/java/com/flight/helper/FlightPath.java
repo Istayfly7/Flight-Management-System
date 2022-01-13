@@ -11,6 +11,8 @@ import com.flight.entity.TravelClassCapacity;
 
 public class FlightPath {
 	
+	//dont forget to add 1 to path values. no id 0 exists*******
+	
 	private Airports from;
 	private Airports to;
 	private LocalDateTime departure; //still need to narrow to one in between dates
@@ -36,8 +38,8 @@ public class FlightPath {
 		
 		for(FlightSchedules flightSchedule: listOfFlights) {
 			
-			int from = flightSchedule.getOrigin_airport_code().getAirport_code();
-			int to = flightSchedule.getDestination_airport_code().getAirport_code();
+			int from = flightSchedule.getOrigin_airport_code().getAirport_code()-1;
+			int to = flightSchedule.getDestination_airport_code().getAirport_code()-1;
 			
 			flightPathCalculate.addEdge(from, to);
 		}
@@ -48,22 +50,22 @@ public class FlightPath {
 	public void printAllPathsIds() {
 		FlightPathCalculate flightPathCalculate = addAllEdges();
 		
-		flightPathCalculate.printAllPaths(from.getAirport_code(), to.getAirport_code());
+		flightPathCalculate.printAllPaths(from.getAirport_code()-1, to.getAirport_code()-1);
 	}
 	
 	public static void main(String[] args) {
 		Airports start = new Airports();
-		start.setAirport_code(0);
+		start.setAirport_code(1);
 		start.setAirport_location("39.8561° N, 104.6737° W");
 		start.setAirport_name("Denver International Airport");
 		
 		Airports dest = new Airports();
-		dest.setAirport_code(1);
+		dest.setAirport_code(2);
 		dest.setAirport_location("25.7969° N, 80.2762° W");
 		dest.setAirport_name("Miami Inernational Airport");
 		
 		Airports dest2 = new Airports();
-		dest2.setAirport_code(2);
+		dest2.setAirport_code(3);
 		dest2.setAirport_location("25.7969");
 		dest2.setAirport_name("i Inernational Airport");
 		
