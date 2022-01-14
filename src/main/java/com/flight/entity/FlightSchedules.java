@@ -18,9 +18,9 @@ public class FlightSchedules {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int flight_number;
 	
-	/*@OneToOne
-	@JoinColumn(name="aircraft_type_code")
-	private FlightCosts airline_code;*/
+	@ManyToOne
+	@JoinColumn(name="flight_costs")
+	private FlightCosts airline_code;
 	
 	@ManyToOne
 	private TravelClassCapacity usual_aircraft_type_code;
@@ -88,6 +88,15 @@ public class FlightSchedules {
 		return usual_aircraft_type_code;
 	}
 
+	public FlightCosts getAirline_code() {
+		return airline_code;
+	}
+
+	public void setAirline_code(FlightCosts airline_code) {
+		this.airline_code = airline_code;
+	}
+
+	
 	/*public void calculate() {
 		//this.setFlight_cost(0.24 * calculateDistance(this.origin_airport_code.getAirport_location(), this.destination_airport_code.getAirport_location()));
 	}

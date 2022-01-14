@@ -2,8 +2,12 @@ package com.flight.helper;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.springframework.data.util.Pair;
+
 import com.flight.calculate.FlightPathCalculate;
 import com.flight.entity.Airports;
 import com.flight.entity.FlightSchedules;
@@ -11,26 +15,20 @@ import com.flight.entity.TravelClassCapacity;
 
 public class FlightPath {
 	
-	//dont forget to add 1 to path values. no id 0 exists*******
-	
 	private Airports from;
 	private Airports to;
-	private LocalDateTime departure; //still need to narrow to one in between dates
-	private LocalDateTime arrival;
-	int numberInParty; //still need to narrow down by numberin party
 	List<FlightSchedules> listOfFlights;
 	List<Airports> listOfAirports;
 	private int vertices;
+	private List<Pair<Pair<Integer, Integer>, FlightSchedules>> flights;
 	
-	public FlightPath(List<FlightSchedules> listOfFlights, List<Airports> listOfAirports, Airports from, Airports to, LocalDateTime departure, LocalDateTime arrival, int numberInParty) {
+	public FlightPath(List<FlightSchedules> listOfFlights, List<Airports> listOfAirports, Airports from, Airports to) {
 		this.from = from;
 		this.to = to;
-		this.departure = departure;
-		this.arrival = arrival;
-		this.numberInParty = numberInParty;
 		this.listOfFlights = listOfFlights;
 		this.listOfAirports = listOfAirports;
 		this.vertices = listOfAirports.size();
+		this.flights = new ArrayList<>();
 	}
 	
 	public FlightPathCalculate addAllEdges() {
@@ -41,18 +39,34 @@ public class FlightPath {
 			int from = flightSchedule.getOrigin_airport_code().getAirport_code()-1;
 			int to = flightSchedule.getDestination_airport_code().getAirport_code()-1;
 			
+			//System.out.println("flight: " + flightSchedule.getFlight_number());
+			//System.out.println("edge: " + from + "-" + to);
+			
 			flightPathCalculate.addEdge(from, to);
+			flights.add(Pair.of(Pair.of(from, to), flightSchedule));
 		}
 		
 		return flightPathCalculate;
 	}
 	
-	public void printAllPathsIds() {
+	public List<List<Integer>> getAllPaths() {
 		FlightPathCalculate flightPathCalculate = addAllEdges();
 		
 		flightPathCalculate.printAllPaths(from.getAirport_code()-1, to.getAirport_code()-1);
+		
+		
+		return flightPathCalculate.parsePathString(flightPathCalculate.getPathString());
 	}
 	
+	public List<Pair<Pair<Integer, Integer>, FlightSchedules>> getFlights(){
+		return this.flights;
+	}
+	
+	public void setFlights(List<Pair<Pair<Integer, Integer>, FlightSchedules>> flights){
+		this.flights = flights;
+	}
+	
+
 	public static void main(String[] args) {
 		Airports start = new Airports();
 		start.setAirport_code(1);
@@ -64,27 +78,60 @@ public class FlightPath {
 		dest.setAirport_location("25.7969° N, 80.2762° W");
 		dest.setAirport_name("Miami Inernational Airport");
 		
-		Airports dest2 = new Airports();
-		dest2.setAirport_code(3);
-		dest2.setAirport_location("25.7969");
-		dest2.setAirport_name("i Inernational Airport");
+		Airports mid = new Airports();
+		mid.setAirport_code(3);
+		mid.setAirport_location("25.7969");
+		mid.setAirport_name("i Inernational Airport");
 		
-		TravelClassCapacity travelClassCapacity = new TravelClassCapacity();
-		travelClassCapacity.setAircraft_type_code(1);
+		TravelClassCapacity travelClassCapacity1 = new TravelClassCapacity();
+		travelClassCapacity1.setAircraft_type_code(1);
 		
-		FlightSchedules flightSchedules = new FlightSchedules();
-		flightSchedules.setFlight_number(1);
+		TravelClassCapacity travelClassCapacity2 = new TravelClassCapacity();
+		travelClassCapacity2.setAircraft_type_code(2);
+		
+		TravelClassCapacity travelClassCapacity3 = new TravelClassCapacity();
+		travelClassCapacity3.setAircraft_type_code(3);
+		
+		FlightSchedules flightSchedules1 = new FlightSchedules();
+		flightSchedules1.setFlight_number(1);
 		
 		Timestamp timeStamp = Timestamp.valueOf(LocalDateTime.now());
-		flightSchedules.setDeparture_date_time(timeStamp);
-		flightSchedules.setArrival_date_time(Timestamp.valueOf(timeStamp.toLocalDateTime().plusHours(2)));
-		flightSchedules.setOrigin_airport_code(start);
-		flightSchedules.setDestination_airport_code(dest);
-		flightSchedules.setUsual_aircraft_type_code(travelClassCapacity);
+		flightSchedules1.setDeparture_date_time(timeStamp);
+		flightSchedules1.setArrival_date_time(Timestamp.valueOf(timeStamp.toLocalDateTime().plusHours(2)));
+		flightSchedules1.setOrigin_airport_code(start);
+		flightSchedules1.setDestination_airport_code(dest);
+		flightSchedules1.setUsual_aircraft_type_code(travelClassCapacity1);
+		
+		FlightSchedules flightSchedules2 = new FlightSchedules();
+		flightSchedules2.setFlight_number(2);
+		
+		flightSchedules2.setDeparture_date_time(timeStamp);
+		flightSchedules2.setArrival_date_time(Timestamp.valueOf(timeStamp.toLocalDateTime().plusHours(2)));
+		flightSchedules2.setOrigin_airport_code(start);
+		flightSchedules2.setDestination_airport_code(mid);
+		flightSchedules2.setUsual_aircraft_type_code(travelClassCapacity2);
+		
+		FlightSchedules flightSchedules3 = new FlightSchedules();
+		flightSchedules3.setFlight_number(3);
+		
+		flightSchedules3.setDeparture_date_time(timeStamp);
+		flightSchedules3.setArrival_date_time(Timestamp.valueOf(timeStamp.toLocalDateTime().plusHours(2)));
+		flightSchedules3.setOrigin_airport_code(mid);
+		flightSchedules3.setDestination_airport_code(dest);
+		flightSchedules3.setUsual_aircraft_type_code(travelClassCapacity3);
 		
 		//still need to test with more than 1 path
-		FlightPath flightPath = new FlightPath(Arrays.asList(flightSchedules), Arrays.asList(start, dest2,  dest), start, dest, timeStamp.toLocalDateTime(), timeStamp.toLocalDateTime().plusHours(2), 1);
-		flightPath.printAllPathsIds();
+		FlightPath flightPath = new FlightPath(Arrays.asList(flightSchedules1, flightSchedules2, flightSchedules3), Arrays.asList(start, mid,  dest), start, dest);
+		
+		
+		List<List<Integer>> paths = flightPath.getAllPaths();
+		
+		
+		for(List<Integer> path: paths) {
+			//List<Integer> path = paths.get(i);
+			
+			System.out.println(path);
+		}
 	}
 	
 }
