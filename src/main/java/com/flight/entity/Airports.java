@@ -16,7 +16,7 @@ public class Airports {
 	private int airport_code;
 	
 	@Column(nullable=false)
-	private String airport_name;
+	private String airportName;
 	
 	@Column(nullable=false)
 	private String airport_location;
@@ -28,7 +28,7 @@ public class Airports {
 	}
 	
 	public String getAirport_name() {
-		return this.airport_name;
+		return this.airportName;
 	}
 
 	public String getAirport_location() {
@@ -45,7 +45,7 @@ public class Airports {
 	}
 
 	public void setAirport_name(String airport_name) {
-		this.airport_name = airport_name;
+		this.airportName = airport_name;
 	}
 
 	public void setAirport_location(String airport_location) {

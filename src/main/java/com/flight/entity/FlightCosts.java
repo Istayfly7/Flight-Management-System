@@ -8,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -41,6 +42,14 @@ public class FlightCosts implements Serializable{
 	@Column(nullable=false)
 	private double flight_cost;
 
+	public FlightCosts() {}
+	
+	public FlightCosts(int flight_number, int aircraft_type_code, Date valid_from_date) {
+		this.flight_number = flight_number;
+		this.aircraft_type_code = aircraft_type_code;
+		this.valid_from_date = valid_from_date;
+	}
+	
 	/*public double calculateOneWay(FlightSchedules valid_from_date, ItineraryReservations reservation) {
 		return calculate(valid_from_date, reservation);
 	}*/

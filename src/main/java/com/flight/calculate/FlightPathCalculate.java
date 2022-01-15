@@ -1,6 +1,7 @@
 package com.flight.calculate;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 //class to rerturn all flight paths possible for given 2 locations
@@ -9,6 +10,8 @@ public class FlightPathCalculate{
 	
 	// No. of vertices in graph
 	private int v;
+	
+	private String pathStr = "";
     
 	//adjacency list
     private ArrayList<Integer>[] adjList;
@@ -51,6 +54,10 @@ public class FlightPathCalculate{
     	// Call recursive utility
     	printAllPathsUtil(s, d, isVisited, pathList);
     }
+    
+    public String getPathString() {
+    	return this.pathStr;
+    }
 
     // A recursive function to print
     // all paths from 'u' to 'd'.
@@ -60,7 +67,8 @@ public class FlightPathCalculate{
     // vertices in the current path
     private void printAllPathsUtil(Integer u, Integer d, boolean[] isVisited, List<Integer> localPathList){
     	if (u.equals(d)) {
-    		System.out.println(localPathList);
+    		//System.out.println(localPathList);
+    		pathStr += localPathList.toString();
     		// if match found then no need to traverse more till depth
     		return;
     	}
@@ -86,7 +94,29 @@ public class FlightPathCalculate{
     	// Mark the current node
     	isVisited[u] = false;
 	}
-
+    
+    public List<List<Integer>> parsePathString(String pathStr){
+    	String[] paths = pathStr.split("[^0-9, ] *");
+    	
+    	List<List<Integer>> pathsList = new ArrayList<>();
+    	
+    	for(String ps: paths) {
+    		String[] p = ps.split(", ");
+    		List<Integer> path = new ArrayList<>();
+    		
+    		for(String pi: p) {
+    			if(!pi.isEmpty())
+    				path.add(Integer.parseInt(pi) + 1);
+    		}
+    		
+    		if(!path.isEmpty())
+    			pathsList.add(path);
+    	}
+    	
+		return pathsList;
+    	
+    }
+    
 	// Driver program
 	public static void main(String[] args)
 	{
@@ -109,5 +139,9 @@ public class FlightPathCalculate{
     		"Following are all different paths from "
         		+ s + " to " + d);
     	g.printAllPaths(s, d);
+    	
+    	System.out.println("----------saved String------------");
+    	String path = g.getPathString();
+    	System.out.println(g.parsePathString(path));
 	}
 }
