@@ -33,13 +33,6 @@ public class Legs {
 	
 	@Column(nullable=false)
 	private Time actual_arrival_time;
-
-	/*{
-		this.origin_airport = flight_number.getOrigin_airport_code().getAirport_location();
-		this.destination_airport = flight_number.getDestination_airport_code().getAirport_location();
-		this.actual_departure_time = flight_number.getDeparture_date_time();
-		this.actual_arrival_time = flight_number.getArrival_date_time();
-	}*/
 	
 	public Legs(FlightSchedules flight_number) {
 		this.flight_number = flight_number;

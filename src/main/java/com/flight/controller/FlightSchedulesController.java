@@ -27,6 +27,7 @@ import com.flight.entity.ItineraryReservations;
 import com.flight.entity.Legs;
 import com.flight.entity.User;
 import com.flight.helper.PrivilegeCheck;
+import com.flight.repository.FlightCostsRepository;
 import com.flight.repository.FlightSchedulesRepository;
 import com.flight.repository.ItineraryReservationsRepository;
 import com.flight.repository.LegsRepository;
@@ -43,6 +44,9 @@ public class FlightSchedulesController extends PrivilegeCheck {
 
 	@Autowired
 	private LegsRepository legsRepository;
+
+	@Autowired
+	private FlightCostsRepository flightCostsRepository;
 	
 	
 	@PostMapping("/save/{passenger_id}")
@@ -52,9 +56,14 @@ public class FlightSchedulesController extends PrivilegeCheck {
 				return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
 			}
 			else if(privilegeCheck(passenger_id) == Boolean.TRUE) {
+				flightCostsRepository.save(flightSchedules.getAirline_code());
+				flightSchedules.setFlight_cost();
 				FlightSchedules f = flightSchedulesRepository.save(flightSchedules);
 				
-				//f.calculate();
+				//create leg
+				Legs leg = new Legs(f);
+				legsRepository.save(leg);
+				
 				return new ResponseEntity<>(f, HttpStatus.OK);
 			}
 			else {
@@ -76,7 +85,20 @@ public class FlightSchedulesController extends PrivilegeCheck {
 				throw new Exception("Passenger not found!");
 			}
 			else if(privilegeCheck(passenger_id) == Boolean.TRUE) {
-				flightSchedulesRepository.delete(flightSchedulesRepository.getById(flight_number));
+				FlightSchedules flightSchedules = flightSchedulesRepository.getById(flight_number);
+				
+				flightCostsRepository.delete(flightSchedules.getAirline_code());
+				
+				for(Legs leg: legsRepository.findAll()) {
+					if(leg.getFlight_Number().getFlight_number() == flight_number) {
+						legsRepository.delete(leg);
+						break;
+					}
+				}
+				
+				
+				
+				flightSchedulesRepository.delete(flightSchedules);
 			}
 			else {
 				throw new Exception("Passenger does not have access to this feature!");
@@ -265,6 +287,7 @@ public class FlightSchedulesController extends PrivilegeCheck {
 						if(leg.getActual_arrival_time() == Time.valueOf(time)) {
 							if(flag == true) {
 								listOfFlights.add(leg.getFlight_Number());
+								flag = false;
 							}
 						}
 					}
