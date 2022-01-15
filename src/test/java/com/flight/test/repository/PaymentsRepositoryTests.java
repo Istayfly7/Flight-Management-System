@@ -7,6 +7,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
@@ -144,7 +145,7 @@ public class PaymentsRepositoryTests {
 		
 		itineraryReservation.setReservation_status_code(listOfPayments);
 		itineraryReservation.setTicket_type_code(listOfLegs);
-		itineraryReservation.setTravel_class_code(travelClassCapacity);
+		itineraryReservation.setTravel_class_code(Arrays.asList(travelClassCapacity));
 		itineraryReservation.setDate_reservation_made(Date.valueOf(LocalDate.now()));
 		itineraryReservation.setNumber_in_party(1);
 		itineraryReservationsRepository.save(itineraryReservation);
