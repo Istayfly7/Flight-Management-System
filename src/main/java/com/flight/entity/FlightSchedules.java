@@ -11,6 +11,10 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import org.springframework.data.util.Pair;
+
+import com.flight.helper.CalculateDistance;
+
 @Entity
 @Table(name="Flight_Schedules")
 public class FlightSchedules {
@@ -40,6 +44,7 @@ public class FlightSchedules {
 	@Column(nullable=false)
 	private Timestamp arrival_date_time;
 
+	
 	public Airports getOrigin_airport_code() {
 		return origin_airport_code;
 	}
@@ -97,13 +102,25 @@ public class FlightSchedules {
 		this.airline_code = airline_code;
 	}
 
-	
-	/*public void calculate() {
-		//this.setFlight_cost(0.24 * calculateDistance(this.origin_airport_code.getAirport_location(), this.destination_airport_code.getAirport_location()));
+	public void setFlight_cost() {
+		double distance = calculateDistance(this.origin_airport_code.getAirport_location(), this.destination_airport_code.getAirport_location());
+		
+		System.out.println("Here set cost");
+		
+		airline_code.setFlight_cost(distance * 0.2);
 	}
+
 	
-	private int calculateDistance(String originLocation, String destinationLocation) {//find actual distance
-		return 1;
-	}*/
+	private double calculateDistance(String originLocation, String destinationLocation) {
+		//latitude, longitude
+		System.out.println("Here calc distance");
+		String[] origin = originLocation.split(", ");
+		String[] destination = destinationLocation.split(", ");
+		
+		Pair<Double, Double> from = Pair.of(Double.valueOf(origin[0]),Double.valueOf(origin[1]));
+		Pair<Double, Double> to = Pair.of(Double.valueOf(destination[0]), Double.valueOf(destination[1]));
+		
+		return CalculateDistance.distance(from.getFirst(), to.getFirst(), from.getSecond(), to.getSecond());
+	}
 	
 }

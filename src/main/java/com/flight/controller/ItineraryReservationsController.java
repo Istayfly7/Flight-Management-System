@@ -2,19 +2,11 @@ package com.flight.controller;
 
 import java.sql.Date;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.TreeMap;
-
-import javax.persistence.Tuple;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -83,7 +75,6 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 	private List<Pair<Pair<Integer, Integer>, FlightSchedules>> finalFlightPaths;
 
 	
-
 	
 	@GetMapping("/view/{passenger_id}")
 	public ResponseEntity<ItineraryReservations> viewItinerary(@PathVariable("passenger_id") int passenger_id, @RequestParam int reservation_id){
@@ -263,7 +254,7 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 			Optional<User> userData = userRepository.findById(passenger_id);
 			
 			if(userData.isPresent()) {
-				User u = userData.get();
+				//User u = userData.get();
 				List<ItineraryReservations> ItineraryReservations = new ArrayList<>();
 				
 				for(int i = 0; i < from.size(); i++) {
@@ -292,7 +283,20 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 			Optional<ItineraryReservations> itineraryData = itineraryReservationsRepository.findById(reservation_id);
 			
 			if(itineraryData.isPresent()) {
+				//remove everything related to the itinerary ressrvation
+				//payments, reseravationpayments, itneraryLegs
+				//add seats back
+				
 				ItineraryReservations itineraryReservation = itineraryData.get();
+				
+				for(ReservationPayments reservationPayments: itineraryReservation.getReservation_status_code()) {
+					paymentsRepository.deleteById(reservationPayments.getPayment_id());
+					reservationPaymentsRepository.delete(reservationPayments);
+				}
+				
+				for(ItineraryLegs itLeg: itineraryReservation.getTicket_type_code())
+					itineraryLegsRepository.delete(itLeg);
+				
 				if(passenger_id == itineraryReservation.getPassengerId())
 					itineraryReservationsRepository.delete(itineraryReservationsRepository.getById(reservation_id));
 				else
@@ -340,8 +344,6 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 		finalFlightPaths = flightPath.getFlights();
 		return paths;
 	}
-	
-	
 	
 	
 	private List<List<Integer>> narrowDownByDate(List<List<Integer>> pathList, LocalDate date, Airports from, Airports to, FlightPath flightPath) {
@@ -393,8 +395,6 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 	}
 	
 	
-
-	
 	private List<List<Integer>> narrowDownByNumberinParty(List<List<Integer>> pathList, int numberInParty, Airports from, Airports to, FlightPath flightPath) {
 		List<Pair<Pair<Integer, Integer>, FlightSchedules>> listOfflights = flightPath.getFlights();
 		
@@ -440,8 +440,6 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 	}
 	
 	
-	
-	
 	private List<String> convertToAirporNames(List<Integer> flightPlan) throws Exception{
 		List<String> flightPlanNames = new ArrayList<>();
 		
@@ -452,8 +450,6 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 		return flightPlanNames;
 	}
 	
-	
-
 	
 	private Double calculateFullFlightPrice(int ticketClass, List<Integer> flightPlan) throws Exception{
 		Double price = 0.0;

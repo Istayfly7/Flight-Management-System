@@ -7,9 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,8 +23,8 @@ public class LegsController extends PrivilegeCheck {
 	@Autowired
 	private LegsRepository legsRepository;
 
-	
-	@PostMapping("/save/{passenger_id}")
+	//leg automatically created when flightschedule created
+	/*@PostMapping("/save/{passenger_id}")
 	public ResponseEntity<Legs> createNewLeg(@PathVariable("passenger_id") int passenger_id, @RequestBody Legs leg) {
 		try {
 			if(privilegeCheck(passenger_id) == null)
@@ -41,7 +39,7 @@ public class LegsController extends PrivilegeCheck {
 			System.out.println(ex.fillInStackTrace());
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-	}
+	}*/
 	
 	@PutMapping("/update_departure/{leg_id}")
 	public ResponseEntity<Legs> updateDeparture(@RequestParam(required=true) int passenger_id, @RequestParam(required=true) Time departureTime, @PathVariable(name="leg_id") int legId){

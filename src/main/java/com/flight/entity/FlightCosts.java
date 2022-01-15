@@ -2,6 +2,7 @@ package com.flight.entity;
 
 import java.io.Serializable;
 import java.sql.Date;
+import java.util.Optional;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -13,6 +14,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.flight.id.FlightCostsId;
+import com.flight.repository.FlightSchedulesRepository;
 
 @SuppressWarnings("serial")
 @Entity
@@ -50,31 +52,11 @@ public class FlightCosts implements Serializable{
 		this.valid_from_date = valid_from_date;
 	}
 	
-	/*public double calculateOneWay(FlightSchedules valid_from_date, ItineraryReservations reservation) {
-		return calculate(valid_from_date, reservation);
-	}*/
 	
-	/*public void calculateRoundTrip(FlightSchedules valid_from_date, FlightSchedules valid_to_date, List<ItineraryReservations> reservations) {
-		return calculate(valid_from_date, reservations.get(0)) + calculate(valid_to_date, reservations.get(1)));
-	}*/
-	
-	/*private double calculate(FlightSchedules flightSchedule, ItineraryReservations reservation) {
-		double price = 0.0;
-		
-		if(reservation.getTravel_class_code() == 1) {
-			price = 0.77 * calculateDistance(flightSchedule.getOrigin_airport_code().getAirport_location(), flightSchedule.getDestination_airport_code().getAirport_location()); 
-		}
-		else{
-			price = 0.24 * calculateDistance(flightSchedule.getOrigin_airport_code().getAirport_location(), flightSchedule.getDestination_airport_code().getAirport_location()); 
-		}
-		
-		return price;
-	}*/
-	
-	public void setFlight_cost(double flight_cost) {
-		this.flight_cost = flight_cost;
+	public void setFlight_cost(double cost) {
+		this.flight_cost = cost;
 	}
-	
+
 	public double getFlight_cost() {
 		return this.flight_cost;
 	}

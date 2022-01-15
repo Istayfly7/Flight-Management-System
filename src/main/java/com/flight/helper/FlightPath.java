@@ -68,19 +68,20 @@ public class FlightPath {
 	
 
 	public static void main(String[] args) {
+		//latitude, longitude
 		Airports start = new Airports();
 		start.setAirport_code(1);
-		start.setAirport_location("39.8561° N, 104.6737° W");
+		start.setAirport_location("39.8561, 104.6737");
 		start.setAirport_name("Denver International Airport");
 		
 		Airports dest = new Airports();
 		dest.setAirport_code(2);
-		dest.setAirport_location("25.7969° N, 80.2762° W");
+		dest.setAirport_location("25.7969, 80.2762");
 		dest.setAirport_name("Miami Inernational Airport");
 		
 		Airports mid = new Airports();
 		mid.setAirport_code(3);
-		mid.setAirport_location("25.7969");
+		mid.setAirport_location("25.7969,85.2762");
 		mid.setAirport_name("i Inernational Airport");
 		
 		TravelClassCapacity travelClassCapacity1 = new TravelClassCapacity();
