@@ -4,12 +4,12 @@ import java.time.LocalDate;
 import java.util.List;
 import java.sql.Date;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -39,8 +39,8 @@ public class ItineraryReservations {
 	private List<ItineraryLegs> ticket_type_code;
 	
 	//1st class: 10 seats, other class: 30
-	@ManyToOne
-	private TravelClassCapacity travel_class_code;
+	@ManyToMany
+	private List<TravelClassCapacity> travel_class_code;
 	
 	private Date date_reservation_made;//sql date object
 	
@@ -48,7 +48,7 @@ public class ItineraryReservations {
 	
 	public ItineraryReservations() {}
 	
-	public ItineraryReservations(User passenger_id, List<ItineraryLegs> ticket_type_code, TravelClassCapacity travel_class_code, int number_in_party) {
+	public ItineraryReservations(User passenger_id, List<ItineraryLegs> ticket_type_code, List<TravelClassCapacity> travel_class_code, int number_in_party) {
 		this.passenger_id = passenger_id;
 		this.ticket_type_code = ticket_type_code;
 		this.travel_class_code = travel_class_code;
@@ -68,7 +68,7 @@ public class ItineraryReservations {
 		return this.passenger_id;
 	}
 
-	public TravelClassCapacity getTravel_class_code() {
+	public List<TravelClassCapacity> getTravel_class_code() {
 		return travel_class_code;
 	}
 
@@ -100,7 +100,7 @@ public class ItineraryReservations {
 		this.ticket_type_code = ticket_type_code;
 	}
 
-	public void setTravel_class_code(TravelClassCapacity travel_class_code) {
+	public void setTravel_class_code(List<TravelClassCapacity> travel_class_code) {
 		this.travel_class_code = travel_class_code;
 	}
 

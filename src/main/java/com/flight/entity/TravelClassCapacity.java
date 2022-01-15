@@ -51,11 +51,11 @@ public class TravelClassCapacity implements Serializable{
 		return classCodes.get(0) + classCodes.get(1);
 	}
 	
-	public void reserveSeat(int travelClass) {
-		reserveSeat(1, travelClass);
+	public void reserveASeat(int travelClass) {
+		reserveSeats(1, travelClass);
 	}
 	
-	public void reserveSeat(int num, int travelClass) {
+	public void reserveSeats(int num, int travelClass) {
 		try {
 			if(travelClass == 1) {
 				if(parseTravelClassCode().get(0) - num >= 0)

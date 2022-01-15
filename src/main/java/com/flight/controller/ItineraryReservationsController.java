@@ -42,6 +42,7 @@ import com.flight.helper.PrivilegeCheck;
 import com.flight.repository.AirportsRepository;
 import com.flight.repository.BookingAgentsRepository;
 import com.flight.repository.FlightSchedulesRepository;
+import com.flight.repository.ItineraryLegsRepository;
 import com.flight.repository.ItineraryReservationsRepository;
 import com.flight.repository.LegsRepository;
 import com.flight.repository.PaymentsRepository;
@@ -76,9 +77,13 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 	@Autowired
 	private AirportsRepository airportsRepository;
 
+	@Autowired
+	private ItineraryLegsRepository itineraryLegsRepository;
 	
 	private List<Pair<Pair<Integer, Integer>, FlightSchedules>> finalFlightPaths;
+
 	
+
 	
 	@GetMapping("/view/{passenger_id}")
 	public ResponseEntity<ItineraryReservations> viewItinerary(@PathVariable("passenger_id") int passenger_id, @RequestParam int reservation_id){
@@ -112,7 +117,7 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 	
 	
 	@GetMapping("/create_one_way")
-	public ResponseEntity<List<Pair<Double, String>>> createOneWay(@RequestParam int ticketClass, @RequestParam int numberInParty, @RequestParam Date date, @RequestBody Airports from, @RequestBody Airports to) {
+	public ResponseEntity<List<Pair<Double, /*List*/String>>> createOneWay(@RequestParam int ticketClass, @RequestParam int numberInParty, @RequestParam Date date, @RequestBody Airports from, @RequestBody Airports to) {
 		List<Pair<Double, String>> listOfPlans = new ArrayList<>();
 		
 		try {
@@ -140,31 +145,8 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 	}
 		
 	
-	
-
-	@GetMapping("/create_round_trip/{passenger_id}")
-	public ResponseEntity<Pair<Double, List<ItineraryReservations>>> createRoundTrip(@PathVariable("passenger_id") int passenger_id, @RequestParam int ticketClass, @RequestParam int numberInParty, @RequestParam List<Date> dates, @RequestBody Airports from, @RequestBody Airports to) {
-		Pair<Double, ItineraryReservations> firstWay = createOneWay(passenger_id, ticketClass, numberInParty, dates.get(0), from, to).getBody();
-		Pair<Double, ItineraryReservations> secWay = createOneWay(passenger_id, ticketClass, numberInParty, dates.get(1), to, from).getBody();
-		
-		try {
-			if(firstWay == null || secWay == null)
-				throw new Exception("Atleast 1 way returned null!");
-			
-			double totPrice = firstWay.getFirst() + secWay.getFirst();
-			
-			Pair<Double, List<ItineraryReservations>> pair = Pair.of(totPrice, Arrays.asList(firstWay.getSecond(), secWay.getSecond()));
-			return new ResponseEntity<>(pair, HttpStatus.OK);
-		}
-		catch(Exception ex) {
-			System.out.println("Error: " + ex.getMessage());
-			System.out.println(ex.fillInStackTrace());
-			return null;
-		}
-	}
-	
-	@GetMapping("/create_multi_city")
-	public ResponseEntity<List<Pair<Double, List<Pair<Double, String>>>>> createMultiCity(@RequestParam int ticketClass, @RequestParam int numberInParty, @RequestParam List<Date> dates, @RequestBody List<Airports> from, @RequestBody List<Airports> to) {
+	@GetMapping("/create_multi_ways")
+	public ResponseEntity<List<Pair<Double, List<Pair<Double, String>>>>> createMultiWays(@RequestParam int ticketClass, @RequestParam int numberInParty, @RequestParam List<Date> dates, @RequestBody List<Airports> from, @RequestBody List<Airports> to) {
 		List<Pair<Double, List<Pair<Double, String>>>> listOfPlansPrice = new ArrayList<>();
 		List<List<Pair<Double, String>>> listOfPlans = new ArrayList<>();
 		
@@ -194,45 +176,75 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 	
 	
 	@PostMapping("/save-one-way/{passenger_id}")//finish createlegs
-	public ResponseEntity<ItineraryReservations> confirm(@PathVariable("passenger_id") int passenger_id, @RequestParam double paymentAmount, @RequestBody ItineraryReservations itineraryReservations, @RequestBody TravelClassCapacity travelClassCode) {//set flight cost... confirm when payment status is ok and passenger_id match
+	public ResponseEntity<ItineraryReservations> confirm(@PathVariable("passenger_id") int passenger_id, 
+			@RequestParam double paymentAmount, @RequestParam int ticketClass, @RequestParam int numberInParty, 
+			@RequestParam Date dates, @RequestBody Airports from, @RequestBody Airports to, @RequestBody List<String> chosenPathstr) {
 		try {
-			/*Optional<User> userData = userRepository.findById(passenger_id);
-			List<BookingAgents> agent = bookingAgentsRepository.findAll();
-			Date today = Date.valueOf(LocalDate.now());
+			Optional<User> userData = userRepository.findById(passenger_id);
+			List<BookingAgents> agents = bookingAgentsRepository.findAll();
+			Date dateReservationMade = Date.valueOf(LocalDate.now());
+			ItineraryReservations itineraryReservation = new ItineraryReservations();
+			
+			itineraryReservation.setDate_reservation_made(dateReservationMade);
+			itineraryReservation.setNumber_in_party(numberInParty);
 			
 			if(userData.isPresent()) {
 				User u = userData.get();
-				if(u.getPassengerId() == itineraryReservations.getPassengerId()) {
-					ReservationPayments reservationPayment = new ReservationPayments();
-					reservationPayment.setReservation_id(itineraryReservations.getReservationId());
-					
-					itineraryReservations.setAgent_id(agent.get((int)Math.random() * (agent.size()-1)));
-					itineraryReservations.setReservation_status_code(Arrays.asList(reservationPayment));
-					itineraryReservations.setTravel_class_code(travelClassCode);
-					itineraryReservations.setDate_reservation_made(today);
-					
-					//create payment object and set it
-					Payments payment = new Payments();
-					payment.setPayment_amount(paymentAmount);
-					payment.setPayment_date(today);
-					payment.setPayment_status_code(Arrays.asList(reservationPayment));
-					paymentsRepository.save(payment);
-					
-					reservationPayment.setPayment_id(payment.getPayment_id());
-					reservationPaymentsRepository.save(reservationPayment);
-					
-					
-					ItineraryReservations itineraryReservation = itineraryReservationsRepository.save(itineraryReservations);
-					return new ResponseEntity<>(itineraryReservation, HttpStatus.OK);
+				itineraryReservation.setPassenger_id(u);
+				
+				BookingAgents agent = agents.get((int) ((Math.random() * agents.size()) - 1));
+				itineraryReservation.setAgent_id(agent);
+				itineraryReservationsRepository.save(itineraryReservation);
+				
+				Payments payment = new Payments();
+				ReservationPayments reservationPayments = new ReservationPayments(itineraryReservation.getReservationId(), payment.getPayment_id());
+				
+				payment.setPayment_amount(paymentAmount);
+				payment.setPayment_status_code(Arrays.asList(reservationPayments));
+				payment.setPayment_date(dateReservationMade);
+				
+				paymentsRepository.save(payment);
+				reservationPaymentsRepository.save(reservationPayments);
+				itineraryReservation.setReservation_status_code(Arrays.asList(reservationPayments));
+				
+				//create itinerary legs list
+				ItineraryLegs itineraryLegs = new ItineraryLegs();
+				itineraryLegs.setReservation_id(itineraryReservation.getReservationId());
+				
+				//turn into list of airport ids
+				List<Integer> chosenPath = new ArrayList<>();
+				List<TravelClassCapacity> listOfPlanes = new ArrayList<>();
+				for(String airportName: chosenPathstr) {
+					chosenPath.add(airportsRepository.findByairportName(airportName).get().getAirport_code());
 				}
-				else{
-					throw new Exception("Passenger does not have access to this feature!");
+				
+				List<Integer> listOfLegs = new ArrayList<>();
+				for(int i = 0; i < chosenPath.size() - 1; i++) {
+					//if(i < chosenPath.size() - 1) {
+					for(Pair<Pair<Integer, Integer>, FlightSchedules> flightPath: finalFlightPaths) {
+						if((chosenPath.get(i) == flightPath.getFirst().getFirst()) && (chosenPath.get(i+1) == flightPath.getFirst().getSecond())) {
+							for(Legs leg: legsRepository.findAll()) {
+								if(leg.getFlight_Number().getFlight_number() == flightPath.getSecond().getFlight_number()) {
+									listOfLegs.add(flightPath.getSecond().getFlight_number());
+									flightPath.getSecond().getUsual_aircraft_type_code().reserveSeats(numberInParty, ticketClass);
+									listOfPlanes.add(flightPath.getSecond().getUsual_aircraft_type_code());
+								}
+							}
+						}
+					}
 				}
+				itineraryLegs.setLeg_id(listOfLegs);
+				itineraryLegsRepository.save(itineraryLegs);
+				itineraryReservation.setTicket_type_code(Arrays.asList(itineraryLegs));
+				itineraryReservation.setTravel_class_code(listOfPlanes);
+				
+				ItineraryReservations it = itineraryReservationsRepository.save(itineraryReservation);
+				
+				 return new ResponseEntity<>(it, HttpStatus.OK);
 			}
 			else {
 				throw new Exception("Passenger id not found!");
-			}*/
-				
+			}
 			
 		}
 		catch(Exception ex) {
@@ -243,40 +255,23 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 	}
 	
 	
-	@PostMapping("/save-round-trip/{passenger_id}")
-	public ResponseEntity<List<ItineraryReservations>> confirmRoundTrip(@PathVariable("passenger_id") int passenger_id, @RequestParam double payment, @RequestBody List<ItineraryReservations> itineraryReservations) {//set flight cost... confirm when payment status is ok and passenger_id match
+	@PostMapping("/save-multi-ways/{passenger_id}")
+	public ResponseEntity<List<ItineraryReservations>> confirmMultiWays(@PathVariable("passenger_id") int passenger_id,
+			@RequestParam double paymentAmount, @RequestParam int ticketClass, @RequestParam int numberInParty,
+			@RequestParam List<Date> dates, @RequestBody List<Airports> from, @RequestBody List<Airports> to, @RequestBody List<List<String>> chosenPathstr) {
 		try {
 			Optional<User> userData = userRepository.findById(passenger_id);
 			
 			if(userData.isPresent()) {
 				User u = userData.get();
-				boolean flag = false;
-				List<ItineraryReservations> ir = new ArrayList<>();
+				List<ItineraryReservations> ItineraryReservations = new ArrayList<>();
 				
-				for(ItineraryReservations itineraryReservation: itineraryReservations) {
-					if(u.getPassengerId() == itineraryReservation.getPassengerId()) {
-						itineraryReservation.getReservation_status_code().setPayment_amount(payment);
-						
-						
-						if((itineraryReservation.getLeg_id().get(0).getFlight_Number().getFlight_cost() * itineraryReservation.getNumber_in_party())  - itineraryReservation.getReservation_status_code().getPayment_amount() <= 0) {
-							if(flag == true) {
-								ir = itineraryReservationsRepository.saveAll(itineraryReservations);
-								
-							}
-							else
-								flag = true;
-							
-						}
-						else {
-							throw new Exception("Itinerary not confirmed! Passenger did not pay the propper amount!");
-						}
-					}
-					else{
-						throw new Exception("Passenger does not have access to this feature!");
-					}
+				for(int i = 0; i < from.size(); i++) {
+					ItineraryReservations.add(confirm(passenger_id, paymentAmount, ticketClass, numberInParty,
+							dates.get(i), from.get(i), to.get(i), chosenPathstr.get(i)).getBody());
 				}
 				
-				return new ResponseEntity<>(ir, HttpStatus.OK);
+				return new ResponseEntity<>(ItineraryReservations, HttpStatus.OK);
 			}
 			else {
 				throw new Exception("Passenger id not found!");
@@ -347,6 +342,8 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 	}
 	
 	
+	
+	
 	private List<List<Integer>> narrowDownByDate(List<List<Integer>> pathList, LocalDate date, Airports from, Airports to, FlightPath flightPath) {
 		List<Pair<Pair<Integer, Integer>, FlightSchedules>> listOfflights = flightPath.getFlights();
 		
@@ -394,6 +391,8 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 		
 		return paths;
 	}
+	
+	
 
 	
 	private List<List<Integer>> narrowDownByNumberinParty(List<List<Integer>> pathList, int numberInParty, Airports from, Airports to, FlightPath flightPath) {
@@ -441,6 +440,8 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 	}
 	
 	
+	
+	
 	private List<String> convertToAirporNames(List<Integer> flightPlan) throws Exception{
 		List<String> flightPlanNames = new ArrayList<>();
 		
@@ -450,6 +451,8 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 		
 		return flightPlanNames;
 	}
+	
+	
 
 	
 	private Double calculateFullFlightPrice(int ticketClass, List<Integer> flightPlan) throws Exception{
@@ -479,73 +482,5 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 		return price;
 	}
 	
-	/*private boolean flightCheck(Date date, Airports from, Airports to, ItineraryReservations itineraryReservation) {//************************
-		List<FlightSchedules> listOfFlights = flightSchedulesRepository.findAll();
-		
-		try {
-			for(int i = 0; i < listOfFlights.size(); i++) {
-				if(Date.valueOf(listOfFlights.get(i).getDeparture_date_time().toLocalDateTime().toLocalDate()) == date && listOfFlights.get(i).getOrigin_airport_code() == from
-						&& listOfFlights.get(i).getDestination_airport_code() == to) {
-					/*List<Legs> legs = itineraryReservation.getLeg_id();
-					List<ItineraryLegs> itineraryLegs = itineraryReservation.getTicket_type_code();
-					List<Legs> listOfLegs = legsRepository.findAll();
-					
-					for(Legs leg: listOfLegs)//saving legs for itinerary
-						if(leg.getFlight_Number().getFlight_number() == listOfFlights.get(i).getFlight_number()) {
-							legs.add(leg);
-							itineraryReservationsRepository.save(itineraryReservation);
-						}*//*
-							
-					return true;
-				}
-				else if(Date.valueOf(listOfFlights.get(i).getDeparture_date_time().toLocalDateTime().toLocalDate()) == date && listOfFlights.get(i).getOrigin_airport_code() == from) {
-					
-					return flightCheck(date, listOfFlights.get(++i).getOrigin_airport_code(), to, itineraryReservation);
-				}
-			}
-			
-			return false;
-		}
-		catch(Exception ex) {
-			return false;
-		}
-	}*/
-
-	/*private ItineraryReservations flightCheck(Date date, Airports from, Airports to, int numberInParty) {//************************
-	List<FlightSchedules> listOfFlights = flightSchedulesRepository.findAll();
-	
-	try {
-		for(int i = 0; i < listOfFlights.size(); i++) {
-			ItineraryReservations itineraryReservation = new ItineraryReservations();
-			itineraryReservation.setNumber_in_party(numberInParty);
-			itineraryReservationsRepository.save(itineraryReservation);
-			
-			ItineraryLegs itLeg = new ItineraryLegs();
-			itLeg.setReservation_id(itineraryReservation.getReservationId());
-			
-			if(Date.valueOf(listOfFlights.get(i).getDeparture_date_time().toLocalDateTime().toLocalDate()) == date && listOfFlights.get(i).getOrigin_airport_code() == from
-					&& listOfFlights.get(i).getDestination_airport_code() == to) {
-				//create last leg in list of leg add leg to reservation
-				//from the solo intineraryleg(add to list of interarylegs)
-				//make sure there is enough seats
-				Legs leg = new Legs(listOfFlights.get(i));
-				legsRepository.save(leg);
-				itLeg.setLeg_id(new ArrayList<>(leg.getLeg_id()));
-				
-				return itineraryReservation;
-			}
-			else if(Date.valueOf(listOfFlights.get(i).getDeparture_date_time().toLocalDateTime().toLocalDate()) == date && listOfFlights.get(i).getOrigin_airport_code() == from) {
-				//create only 1 itinerayleg add it to list of itineraryleg
-				//with a list of legs per itineraryLeg and make sure there is enough seats
-				return flightCheck(date, listOfFlights.get(++i).getOrigin_airport_code(), to, numberInParty);
-			}
-		}
-		
-		return null;
-	}
-	catch(Exception ex) {
-		return null;
-	}
-}*/
 
 }

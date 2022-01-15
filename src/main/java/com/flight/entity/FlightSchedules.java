@@ -8,6 +8,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -18,7 +19,7 @@ public class FlightSchedules {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int flight_number;
 	
-	@ManyToOne
+	@OneToOne(mappedBy="valid_to_date")
 	@JoinColumn(name="flight_costs")
 	private FlightCosts airline_code;
 	
