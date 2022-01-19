@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,7 +28,6 @@ import com.flight.entity.ItineraryReservations;
 import com.flight.entity.Legs;
 import com.flight.entity.User;
 import com.flight.helper.PrivilegeCheck;
-import com.flight.repository.FlightCostsRepository;
 import com.flight.repository.FlightSchedulesRepository;
 import com.flight.repository.ItineraryReservationsRepository;
 import com.flight.repository.LegsRepository;
@@ -45,10 +45,6 @@ public class FlightSchedulesController extends PrivilegeCheck {
 	@Autowired
 	private LegsRepository legsRepository;
 
-	@Autowired
-	private FlightCostsRepository flightCostsRepository;
-	
-	
 	@PostMapping("/save/{passenger_id}")
 	public ResponseEntity<FlightSchedules> createNewFlight(@PathVariable("passenger_id") int passenger_id, @RequestBody FlightSchedules flightSchedules) {
 		try {
@@ -56,9 +52,18 @@ public class FlightSchedulesController extends PrivilegeCheck {
 				return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
 			}
 			else if(privilegeCheck(passenger_id) == Boolean.TRUE) {
-				flightCostsRepository.save(flightSchedules.getAirline_code());
-				flightSchedules.setFlight_cost();
+				/*flightCostsRepository.save(flightSchedules.getAirline_code());*/
+				flightSchedules.setFlightCost();
 				FlightSchedules f = flightSchedulesRepository.save(flightSchedules);
+				//f.setFlightCost();
+				//flightSchedulesRepository.save(f);
+				//FlightCosts flightCosts = new FlightCosts(f.getFlight_number(), f.getUsual_aircraft_type_code().getAircraft_type_code());
+				//flightCosts.setFlight(f);
+				
+				//FlightCosts fc = flightCostsRepository.save(flightCosts);
+				//flightSchedules.setAirline_code(fc);
+				//flightSchedules.setFlight_cost();
+				//flightCostsRepository.save(flightCosts);
 				
 				//create leg
 				Legs leg = new Legs(f);
@@ -87,7 +92,7 @@ public class FlightSchedulesController extends PrivilegeCheck {
 			else if(privilegeCheck(passenger_id) == Boolean.TRUE) {
 				FlightSchedules flightSchedules = flightSchedulesRepository.getById(flight_number);
 				
-				flightCostsRepository.delete(flightSchedules.getAirline_code());
+				//flightCostsRepository.delete(flightSchedules.getAirline_code());
 				
 				for(Legs leg: legsRepository.findAll()) {
 					if(leg.getFlight_Number().getFlight_number() == flight_number) {
@@ -95,7 +100,6 @@ public class FlightSchedulesController extends PrivilegeCheck {
 						break;
 					}
 				}
-				
 				
 				
 				flightSchedulesRepository.delete(flightSchedules);
@@ -261,6 +265,35 @@ public class FlightSchedulesController extends PrivilegeCheck {
 		}
 		catch(Exception ex) {
 			System.out.println("Error: " + ex.getMessage());
+			System.out.println(ex.fillInStackTrace());
+			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	@PutMapping("/update_fare/{admin_id}")
+	public ResponseEntity<FlightSchedules> updateFare(@PathVariable("admin_id") int admin_id, @RequestParam(required=true) int newCost, @RequestParam(required=true) int flight_number){
+		try {
+			if(privilegeCheck(admin_id) == null) {
+				return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+			}
+			else if(privilegeCheck(admin_id) == Boolean.TRUE) {
+				Optional<FlightSchedules> flightScheduleData = flightSchedulesRepository.findById(flight_number);
+				
+				if(flightScheduleData.isPresent()) {
+					FlightSchedules flightSchedule = flightScheduleData.get();
+					flightSchedule.updateFlightCost(newCost);
+					
+					FlightSchedules f = flightSchedulesRepository.save(flightSchedule);
+					return new ResponseEntity<>(f, HttpStatus.OK);
+				}
+				
+				throw new Exception("No flight data found for flight number" + flight_number + "!");
+			}
+			else {
+				throw new Exception("Passenger does not have access to this feature!");
+			}
+		}
+		catch(Exception ex) {
 			System.out.println(ex.fillInStackTrace());
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}

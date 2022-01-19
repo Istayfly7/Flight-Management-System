@@ -59,7 +59,6 @@ public class UserController extends PrivilegeCheck {
 			}
 		}
 		catch(Exception ex) {
-			System.out.println("Error: " + ex.getMessage());
 			System.out.println(ex.fillInStackTrace());
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}

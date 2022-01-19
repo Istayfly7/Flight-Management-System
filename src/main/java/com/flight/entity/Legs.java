@@ -34,6 +34,8 @@ public class Legs {
 	@Column(nullable=false)
 	private Time actual_arrival_time;
 	
+	public Legs() {}
+	
 	public Legs(FlightSchedules flight_number) {
 		this.flight_number = flight_number;
 		this.origin_airport = flight_number.getOrigin_airport_code().getAirport_name();

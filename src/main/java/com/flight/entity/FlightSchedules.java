@@ -23,19 +23,19 @@ public class FlightSchedules {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int flight_number;
 	
-	@OneToOne(mappedBy="valid_to_date")
-	@JoinColumn(name="flight_costs")
-	private FlightCosts airline_code;
+	/*@OneToOne(mappedBy="flight_schedules")
+	//@JoinColumn(name="flight_costs")
+	private FlightCosts airline_code;*/
 	
 	@ManyToOne
 	private TravelClassCapacity usual_aircraft_type_code;
 	
 	@ManyToOne
-	@JoinColumn(insertable=false, updatable=false)
+	@JoinColumn
 	private Airports origin_airport_code;
 	
 	@ManyToOne
-	@JoinColumn(insertable=false, updatable=false)
+	@JoinColumn
 	private Airports destination_airport_code;
 	
 	@Column(nullable=false)
@@ -44,6 +44,8 @@ public class FlightSchedules {
 	@Column(nullable=false)
 	private Timestamp arrival_date_time;
 
+	private double flightCost;
+	
 	
 	public Airports getOrigin_airport_code() {
 		return origin_airport_code;
@@ -94,26 +96,36 @@ public class FlightSchedules {
 		return usual_aircraft_type_code;
 	}
 
-	public FlightCosts getAirline_code() {
+	/*public FlightCosts getAirline_code() {
 		return airline_code;
 	}
 
 	public void setAirline_code(FlightCosts airline_code) {
 		this.airline_code = airline_code;
+	}*/
+	
+	public void updateFlightCost(double newCost) {
+		double newCostForm = Double.parseDouble(String.format("%.2f", newCost));
+		this.flightCost = newCostForm;
 	}
 
-	public void setFlight_cost() {
+	public double getFlightCost() {
+		return flightCost;
+	}
+
+	public void setFlightCost() {
 		double distance = calculateDistance(this.origin_airport_code.getAirport_location(), this.destination_airport_code.getAirport_location());
 		
-		System.out.println("Here set cost");
+		//airline_code.setFlight_cost(distance * 0.2);
 		
-		airline_code.setFlight_cost(distance * 0.2);
+		double cost = Double.parseDouble(String.format("%.2f", distance * 0.2));
+		this.flightCost = cost;
 	}
 
 	
 	private double calculateDistance(String originLocation, String destinationLocation) {
 		//latitude, longitude
-		System.out.println("Here calc distance");
+		//System.out.println("Here calc distance");
 		String[] origin = originLocation.split(", ");
 		String[] destination = destinationLocation.split(", ");
 		

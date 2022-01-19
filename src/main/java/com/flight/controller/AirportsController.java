@@ -31,7 +31,7 @@ public class AirportsController extends PrivilegeCheck{
 	
 	@PostMapping("/save/{passenger_id}")
 	public ResponseEntity<Airports> createNewAirport(@PathVariable("passenger_id") int passenger_id, @RequestBody Airports airport) {
-		try {
+		try {//enter location like (lat, long) w/ no degreee symbol or cardinal direction -> Ex: "25.0000, 58.0000"
 			if(privilegeCheck(passenger_id) == null)
 				return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
 			else if(privilegeCheck(passenger_id) == Boolean.TRUE) {
