@@ -107,25 +107,34 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 	}
 	
 	
-	@GetMapping("/create_one_way")
-	public ResponseEntity<List<Pair<Double, /*List*/String>>> createOneWay(@RequestParam int ticketClass, @RequestParam int numberInParty, @RequestParam Date date, @RequestBody Airports from, @RequestBody Airports to) {
+	@GetMapping("/create-one-way")
+	public ResponseEntity<List<Pair<Double, /*List*/String>>> createOneWay(@RequestParam(required=true) int ticketClass, @RequestParam(required=true) int numberInParty, @RequestParam(required=true) Date date, @RequestParam int fromId, @RequestParam int toId) {
 		List<Pair<Double, String>> listOfPlans = new ArrayList<>();
+		Optional<Airports> fromData = airportsRepository.findById(fromId);
+		Optional<Airports> toData = airportsRepository.findById(toId);
 		
 		try {
-			if(flightCheck(date.toLocalDate(), from, to, numberInParty)) {
-				List<List<Integer>> flightPlans = getFlightPlanIds(date.toLocalDate(), from, to, numberInParty);
-			
-				for(List<Integer> flightPlan: flightPlans) {
-					List<String> airportNames = convertToAirporNames(flightPlan);
+			if(fromData.isPresent() && toData.isPresent()) {
+				Airports from = fromData.get();
+				Airports to = toData.get();
 				
-					listOfPlans.add(Pair.of(calculateFullFlightPrice(ticketClass, flightPlan), airportNames.toString()));
-				}
+				if(flightCheck(date.toLocalDate(), from, to, numberInParty)) {
+					List<List<Integer>> flightPlans = getFlightPlanIds(date.toLocalDate(), from, to, numberInParty);
 			
-				return new ResponseEntity<>(listOfPlans, HttpStatus.OK);
+					for(List<Integer> flightPlan: flightPlans) {
+						List<String> airportNames = convertToAirporNames(flightPlan);
+				
+						listOfPlans.add(Pair.of(calculateFullFlightPrice(ticketClass, flightPlan), airportNames.toString()));
+					}
+			
+					return new ResponseEntity<>(listOfPlans, HttpStatus.OK);
+				}
+				else {
+					throw new Exception("No Possible flight from " + from.getAirport_name() + " to " + to.getAirport_name() + "!");
+				}
 			}
-			else {
-				throw new Exception("No Possible flight from " + from.getAirport_name() + " to " + to.getAirport_name() + "!");
-			}
+			
+			throw new Exception("no data found for the from or to airport id given");
 		}
 		catch(Exception ex) {
 			System.out.println("Error: " + ex.getMessage());
@@ -166,10 +175,10 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 	}
 	
 	
-	@PostMapping("/save-one-way/{passenger_id}")//finish createlegs
-	public ResponseEntity<ItineraryReservations> confirm(@PathVariable("passenger_id") int passenger_id, 
+	@PostMapping("/save-one-way/{passenger_id}")
+	public ResponseEntity<Pair<Payments, ItineraryReservations>> confirm(@PathVariable("passenger_id") int passenger_id, 
 			@RequestParam double paymentAmount, @RequestParam int ticketClass, @RequestParam int numberInParty, 
-			@RequestParam Date dates, @RequestBody Airports from, @RequestBody Airports to, @RequestBody List<String> chosenPathstr) {
+			@RequestBody List<String> chosenPathstr) {
 		try {
 			Optional<User> userData = userRepository.findById(passenger_id);
 			List<BookingAgents> agents = bookingAgentsRepository.findAll();
@@ -185,18 +194,13 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 				
 				BookingAgents agent = agents.get((int) ((Math.random() * agents.size()) - 1));
 				itineraryReservation.setAgent_id(agent);
-				itineraryReservationsRepository.save(itineraryReservation);
+				ItineraryReservations it = itineraryReservationsRepository.save(itineraryReservation);
 				
 				Payments payment = new Payments();
-				ReservationPayments reservationPayments = new ReservationPayments(itineraryReservation.getReservationId(), payment.getPayment_id());
-				
 				payment.setPayment_amount(paymentAmount);
-				payment.setPayment_status_code(Arrays.asList(reservationPayments));
 				payment.setPayment_date(dateReservationMade);
 				
-				paymentsRepository.save(payment);
-				reservationPaymentsRepository.save(reservationPayments);
-				itineraryReservation.setReservation_status_code(Arrays.asList(reservationPayments));
+				Payments p = paymentsRepository.save(payment);
 				
 				//create itinerary legs list
 				ItineraryLegs itineraryLegs = new ItineraryLegs();
@@ -211,9 +215,8 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 				
 				List<Integer> listOfLegs = new ArrayList<>();
 				for(int i = 0; i < chosenPath.size() - 1; i++) {
-					//if(i < chosenPath.size() - 1) {
 					for(Pair<Pair<Integer, Integer>, FlightSchedules> flightPath: finalFlightPaths) {
-						if((chosenPath.get(i) == flightPath.getFirst().getFirst()) && (chosenPath.get(i+1) == flightPath.getFirst().getSecond())) {
+						if((chosenPath.get(i) == flightPath.getFirst().getFirst() + 1) && (chosenPath.get(i+1) == flightPath.getFirst().getSecond() + 1)) {
 							for(Legs leg: legsRepository.findAll()) {
 								if(leg.getFlight_Number().getFlight_number() == flightPath.getSecond().getFlight_number()) {
 									listOfLegs.add(flightPath.getSecond().getFlight_number());
@@ -225,13 +228,10 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 					}
 				}
 				itineraryLegs.setLeg_id(listOfLegs);
-				itineraryLegsRepository.save(itineraryLegs);
-				itineraryReservation.setTicket_type_code(Arrays.asList(itineraryLegs));
 				itineraryReservation.setTravel_class_code(listOfPlanes);
+				itineraryLegsRepository.save(itineraryLegs);
 				
-				ItineraryReservations it = itineraryReservationsRepository.save(itineraryReservation);
-				
-				 return new ResponseEntity<>(it, HttpStatus.OK);
+				 return new ResponseEntity<>(Pair.of(p, it), HttpStatus.OK);
 			}
 			else {
 				throw new Exception("Passenger id not found!");
@@ -239,7 +239,6 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 			
 		}
 		catch(Exception ex) {
-			System.out.println("Error: " + ex.getMessage());
 			System.out.println(ex.fillInStackTrace());
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -270,6 +269,38 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 		}
 		catch(Exception ex) {
 			System.out.println("Error: " + ex.getMessage());
+			System.out.println(ex.fillInStackTrace());
+			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	
+	@PostMapping("/confirm-payment")
+	public ResponseEntity<Payments> confirmPayment(@RequestParam(required=true) int reservation_id, @RequestParam(required=true) int payment_id){
+		Optional<ItineraryReservations> itineraryReservationData = itineraryReservationsRepository.findById(reservation_id);
+		//link interanray legs and check itinerary reseravation reservationpayment
+		try {
+			if(itineraryReservationData.isPresent()) {
+				ReservationPayments reservationPayments = new ReservationPayments();
+				reservationPayments.setReservation_id(reservation_id);
+				reservationPayments.setPayment_id(payment_id);
+				
+				reservationPaymentsRepository.save(reservationPayments);
+				
+				Optional<Payments> paymentData = paymentsRepository.findById(payment_id);
+				
+				if(paymentData.isPresent()) {
+					Payments payment = paymentData.get();
+					
+					return new ResponseEntity<>(payment, HttpStatus.OK);
+				}
+				
+				throw new Exception("No data found for payment id " + payment_id + "!"); 
+			}
+			
+			throw new Exception("No data found for reservation id " + reservation_id + "!");
+		}
+		catch(Exception ex) {
 			System.out.println(ex.fillInStackTrace());
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -341,7 +372,7 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 			planMap.put(i, path);
 		}*/
 		
-		finalFlightPaths = flightPath.getFlights();
+		this.finalFlightPaths = flightPath.getFlights();
 		return paths;
 	}
 	
@@ -460,13 +491,13 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 				int toId = flightPlan.get(i+1);
 				
 				for(Pair<Pair<Integer, Integer>, FlightSchedules> flightSchedule: finalFlightPaths) {
-					if((flightSchedule.getFirst().getFirst() == fromId) && (flightSchedule.getFirst().getSecond() == toId)) {
+					if((flightSchedule.getFirst().getFirst()+1 == fromId) && (flightSchedule.getFirst().getSecond()+1 == toId)) {
 						//price += flightSchedule.getSecond().getAirline_code().getFlight_cost();
 						if(ticketClass == 1) {
-							price += flightSchedule.getSecond().getAirline_code().getFlight_cost() * 1.75;
+							price += Double.parseDouble(String.format("%.2f", flightSchedule.getSecond().getFlightCost() * 1.75));
 						}
 						else {
-							price += flightSchedule.getSecond().getAirline_code().getFlight_cost();
+							price += flightSchedule.getSecond().getFlightCost();
 						}
 					}
 				}

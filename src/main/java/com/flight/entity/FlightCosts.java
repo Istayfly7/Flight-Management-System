@@ -6,6 +6,8 @@ import java.util.Optional;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
 import javax.persistence.JoinColumn;
@@ -25,31 +27,24 @@ public class FlightCosts implements Serializable{
 	//@OneToOne
 	//@JoinColumn(name="flight_number")
 	@Id
-	private int flight_number;
+	private int flight_costs_number;
 	
 	//@OneToOne
 	//@JoinColumn(name="aircraft_type_code")
 	@Id
 	private int aircraft_type_code;
 	
-	//@OneToOne
-	//@JoinColumn(name="departure_date_time")
-	@Id
-	private Date valid_from_date;
 	
 	@OneToOne
-	@JoinColumn(name="arrival_date_time")
-	private FlightSchedules valid_to_date;
+	private FlightSchedules flight_schedules;
 	
-	@Column(nullable=false)
 	private double flight_cost;
 
 	public FlightCosts() {}
 	
-	public FlightCosts(int flight_number, int aircraft_type_code, Date valid_from_date) {
-		this.flight_number = flight_number;
+	public FlightCosts(int flight_costs_number, int aircraft_type_code) {
+		this.flight_costs_number = flight_costs_number;
 		this.aircraft_type_code = aircraft_type_code;
-		this.valid_from_date = valid_from_date;
 	}
 	
 	
@@ -61,8 +56,20 @@ public class FlightCosts implements Serializable{
 		return this.flight_cost;
 	}
 	
-	public int getFlight() {
-		return this.flight_number;
+	public FlightSchedules getFlight() {
+		return this.flight_schedules;
+	}
+	
+	public void setFlight(FlightSchedules flightSchedules) {
+		this.flight_schedules = flightSchedules;
 	}
 
+	public int getFlight_costs_number() {
+		return this.flight_costs_number;
+	}
+
+	public void setFlight_costs_number(int flight_costs_number) {
+		this.flight_costs_number = flight_costs_number;
+	}
+	
 }
