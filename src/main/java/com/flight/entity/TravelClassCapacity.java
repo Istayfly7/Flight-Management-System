@@ -25,16 +25,17 @@ public class TravelClassCapacity implements Serializable{
 	
 	@Id
 	//@Column(nullable=false)
-	private String travel_class_code = "10,30";
+	private String travel_class_code; //= "10,30";
 	
-	@Column(nullable=false)
-	private int seat_capacity = addClassCodes(parseTravelClassCode());
+	//@Column(nullable=false)
+	private int seat_capacity;
 	
 	public TravelClassCapacity() {}
 	
 	public TravelClassCapacity(int aircraft_type_code, String travel_class_code) {
 		this.aircraft_type_code = aircraft_type_code;
 		this.travel_class_code = travel_class_code;
+		this.seat_capacity = addClassCodes(parseTravelClassCode());
 	}
 	
 	public List<Integer> parseTravelClassCode(){
@@ -58,14 +59,18 @@ public class TravelClassCapacity implements Serializable{
 	public void reserveSeats(int num, int travelClass) {
 		try {
 			if(travelClass == 1) {
-				if(parseTravelClassCode().get(0) - num >= 0)
+				if(parseTravelClassCode().get(0) - num >= 0) {
 					this.travel_class_code = (parseTravelClassCode().get(0) - num) + "," + parseTravelClassCode().get(1).toString();
+					this.seat_capacity -= num;
+				}
 				else
 					throw new Exception("Not enough seats left to reserve " + num + " seats!");
 			}
 			else {
-				if(parseTravelClassCode().get(1) - num >= 0)
+				if(parseTravelClassCode().get(1) - num >= 0) {
 					this.travel_class_code = parseTravelClassCode().get(0).toString() + "," + (parseTravelClassCode().get(1) - num);
+					this.seat_capacity -= num;
+				}
 				else
 					throw new Exception("Not enough seats left to reserve " + num + " seats!");
 			}
@@ -91,14 +96,26 @@ public class TravelClassCapacity implements Serializable{
 		return aircraft_type_code;
 	}
 	
-
 	public void setAircraft_type_code(int aircraft_type_code) {
 		this.aircraft_type_code = aircraft_type_code;
 	}
 
-	public int getSeat_capacity() {
+	
+ 	public int getSeat_capacity() {
 		return seat_capacity;
 	}
+
+	
+	public String getTravel_class_code() {
+		return travel_class_code;
+	}
+	
+
+	public void setTravel_class_code(String travel_class_code) {
+		this.travel_class_code = travel_class_code;
+		this.seat_capacity = addClassCodes(parseTravelClassCode());
+	}
+	
 	
 	
 	

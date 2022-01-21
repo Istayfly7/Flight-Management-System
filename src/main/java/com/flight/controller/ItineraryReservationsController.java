@@ -72,8 +72,15 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 	@Autowired
 	private ItineraryLegsRepository itineraryLegsRepository;
 	
+	//set by confirm a flight type. like one way or round trip {not confirm payment}
+	
 	private List<Pair<Pair<Integer, Integer>, FlightSchedules>> finalFlightPaths;
-
+	
+	private List<Integer> chosenPath;
+	
+	private int ticketClass;
+	
+	private int numberInParty;
 	
 	
 	@GetMapping("/view/{passenger_id}")
@@ -202,36 +209,17 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 				
 				Payments p = paymentsRepository.save(payment);
 				
-				//create itinerary legs list
-				ItineraryLegs itineraryLegs = new ItineraryLegs();
-				itineraryLegs.setReservation_id(itineraryReservation.getReservationId());
-				
 				//turn into list of airport ids
 				List<Integer> chosenPath = new ArrayList<>();
-				List<TravelClassCapacity> listOfPlanes = new ArrayList<>();
 				for(String airportName: chosenPathstr) {
 					chosenPath.add(airportsRepository.findByairportName(airportName).get().getAirport_code());
 				}
 				
-				List<Integer> listOfLegs = new ArrayList<>();
-				for(int i = 0; i < chosenPath.size() - 1; i++) {
-					for(Pair<Pair<Integer, Integer>, FlightSchedules> flightPath: finalFlightPaths) {
-						if((chosenPath.get(i) == flightPath.getFirst().getFirst() + 1) && (chosenPath.get(i+1) == flightPath.getFirst().getSecond() + 1)) {
-							for(Legs leg: legsRepository.findAll()) {
-								if(leg.getFlight_Number().getFlight_number() == flightPath.getSecond().getFlight_number()) {
-									listOfLegs.add(flightPath.getSecond().getFlight_number());
-									flightPath.getSecond().getUsual_aircraft_type_code().reserveSeats(numberInParty, ticketClass);
-									listOfPlanes.add(flightPath.getSecond().getUsual_aircraft_type_code());
-								}
-							}
-						}
-					}
-				}
-				itineraryLegs.setLeg_id(listOfLegs);
-				itineraryReservation.setTravel_class_code(listOfPlanes);
-				itineraryLegsRepository.save(itineraryLegs);
+				this.chosenPath = chosenPath;
+				this.numberInParty = numberInParty;
+				this.ticketClass = ticketClass;
 				
-				 return new ResponseEntity<>(Pair.of(p, it), HttpStatus.OK);
+				return new ResponseEntity<>(Pair.of(p, it), HttpStatus.OK);
 			}
 			else {
 				throw new Exception("Passenger id not found!");
@@ -284,8 +272,37 @@ public class ItineraryReservationsController extends PrivilegeCheck {
 				ReservationPayments reservationPayments = new ReservationPayments();
 				reservationPayments.setReservation_id(reservation_id);
 				reservationPayments.setPayment_id(payment_id);
-				
 				reservationPaymentsRepository.save(reservationPayments);
+				
+				//create itinerary legs list
+				ItineraryLegs itineraryLegs = new ItineraryLegs();
+				itineraryLegs.setReservation_id(reservation_id);
+				
+				List<TravelClassCapacity> listOfPlanes = new ArrayList<>();
+				List<Integer> listOfLegs = new ArrayList<>();
+				for(int i = 0; i < this.chosenPath.size() - 1; i++) {
+					for(Pair<Pair<Integer, Integer>, FlightSchedules> flightPath: this.finalFlightPaths) {
+						if((this.chosenPath.get(i) == flightPath.getFirst().getFirst() + 1) && (this.chosenPath.get(i+1) == flightPath.getFirst().getSecond() + 1)) {
+							for(Legs leg: legsRepository.findAll()) {
+								if(leg.getFlight_Number().getFlight_number() == flightPath.getSecond().getFlight_number()) {
+									listOfLegs.add(flightPath.getSecond().getFlight_number());
+									flightPath.getSecond().getUsual_aircraft_type_code().reserveSeats(this.numberInParty, this.ticketClass);
+									listOfPlanes.add(flightPath.getSecond().getUsual_aircraft_type_code());
+								}
+							}
+						}
+					}
+				}
+				itineraryLegs.setLeg_id(listOfLegs);
+				
+				ItineraryReservations itineraryReservation = itineraryReservationData.get();
+				itineraryReservation.setTravel_class_code(listOfPlanes);
+				itineraryReservation.setTicket_type_code(Arrays.asList(itineraryLegs));
+				
+				//itineraryReservationsRepository.save(itineraryReservation);
+				itineraryLegsRepository.save(itineraryLegs);
+				
+				
 				
 				Optional<Payments> paymentData = paymentsRepository.findById(payment_id);
 				
